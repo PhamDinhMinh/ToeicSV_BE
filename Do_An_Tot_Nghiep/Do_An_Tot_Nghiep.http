@@ -1,0 +1,6 @@
+@Do_An_Tot_Nghiep_HostAddress = http://localhost:5057
+
+GET {{Do_An_Tot_Nghiep_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
