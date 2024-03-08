@@ -56,3 +56,4 @@
 /Users/yootek/Project.Net/NewProject/Do_An_Tot_Nghiep/Do_An_Tot_Nghiep/bin/Debug/net8.0/System.Security.Permissions.dll
 /Users/yootek/Project.Net/NewProject/Do_An_Tot_Nghiep/Do_An_Tot_Nghiep/obj/Debug/net8.0/Do_An_Tot_Nghiep.RazorAssemblyInfo.cache
 /Users/yootek/Project.Net/NewProject/Do_An_Tot_Nghiep/Do_An_Tot_Nghiep/obj/Debug/net8.0/Do_An_Tot_Nghiep.RazorAssemblyInfo.cs
+/Users/yootek/Project.Net/NewProject/Do_An_Tot_Nghiep/Do_An_Tot_Nghiep/obj/Debug/net8.0/Do_An_Tot_Nghiep.sourcelink.json

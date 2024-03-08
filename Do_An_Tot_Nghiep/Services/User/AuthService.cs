@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.User;
+using Microsoft.EntityFrameworkCore;
 
 namespace Do_An_Tot_Nghiep.Services.User;
 
@@ -17,6 +19,29 @@ public class AuthService : IAuthService
         _dbService = dbService;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
+    }
+
+    public async Task<Models.User> Login(UserLoginDto input)
+    {
+        try
+        {
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserName == input.UserName);
+            if (user == null)
+            {
+                return null;
+            }
+            var passwordVerified = await VerifyPassword(input.Password, user.Password);
+            if (!passwordVerified)
+            {
+                return null; 
+            }
+            return user;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public async Task<Models.User> Register(UserRegisterDto input)
@@ -38,23 +63,43 @@ public class AuthService : IAuthService
         }
     }
     
+    public async Task<Models.User> GetUserInfo()
+    {
+        Models.User userInfo = new Models.User(); 
+ 
+        if (_httpContextAccessor.HttpContext != null)
+        {
+            var user =  _httpContextAccessor.HttpContext.User;
+            userInfo.UserName = user.FindFirstValue(ClaimTypes.Name);
+            userInfo.EmailAddress = user.FindFirstValue(ClaimTypes.Email);
+            userInfo.Role = user.FindFirstValue(ClaimTypes.Role);
+        }
+        return await Task.FromResult(userInfo);
+    }
+    
     public async Task<string> HashPassword(string password)
     {
         using (var sha256 = SHA256.Create())
         {
             byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-
-            // Tạo một MemoryStream từ mảng byte
             using (var stream = new MemoryStream(passwordBytes))
             {
-                // Băm mật khẩu sử dụng SHA-256
                 byte[] passwordHash = await sha256.ComputeHashAsync(stream);
-
-                // Chuyển đổi mảng byte thành chuỗi hex
                 string hashedPassword = BitConverter.ToString(passwordHash).Replace("-", "").ToLower();
-
                 return hashedPassword;
             }
         }
+    }
+    
+    public async Task<bool> VerifyPassword(string password, string storedPasswordHash)
+    {
+        string inputHashedPassword = await HashPassword(password);
+        return inputHashedPassword == storedPasswordHash;
+    }
+    
+    public async Task<bool> GetByUserName(string userName)
+    {
+        var userExists = await context.Users.AnyAsync(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
+        return userExists;
     }
 }

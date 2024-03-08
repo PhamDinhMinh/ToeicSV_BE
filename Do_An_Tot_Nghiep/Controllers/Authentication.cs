@@ -1,6 +1,12 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Do_An_Tot_Nghiep.Dto.User;
+using Do_An_Tot_Nghiep.Helpers;
+using Do_An_Tot_Nghiep.Models;
 using Do_An_Tot_Nghiep.Services.User;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Do_An_Tot_Nghiep.Controllers;
 
@@ -42,4 +48,43 @@ public class AuthenticationController : Controller
         }
     }
 
+    [HttpPost("Login")]
+    public async Task<IActionResult> Login([FromBody] UserLoginDto input)
+    {
+        try
+        {
+            var user = await _userService.Login(input);
+            if (user == null)
+            {
+                return BadRequest("Tên đăng nhập hoặc mật khẩu không đúng.");
+            }
+            var tokenService = new Token(_config);
+            var token = tokenService.CreateToken(user);
+            var refreshToken = tokenService.GenerateRefreshToken();
+
+            return Ok(new { AccessToken = token, RefreshToken = refreshToken, User = user });
+            
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return StatusCode(500, e.Message);
+        }
+    }
+
+    [HttpGet("GetUserInfo")]
+    [Authorize]
+    public async Task<IActionResult> GetUserInfo()
+    {
+        try
+        {
+            var user = await _userService.GetUserInfo();
+            return Ok(user);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
 }
