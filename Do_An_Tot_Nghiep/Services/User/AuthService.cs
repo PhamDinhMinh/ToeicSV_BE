@@ -70,9 +70,11 @@ public class AuthService : IAuthService
         if (_httpContextAccessor.HttpContext != null)
         {
             var user =  _httpContextAccessor.HttpContext.User;
+            userInfo.Id = int.Parse(user.FindFirstValue("Id"));
             userInfo.UserName = user.FindFirstValue(ClaimTypes.Name);
             userInfo.EmailAddress = user.FindFirstValue(ClaimTypes.Email);
             userInfo.Role = user.FindFirstValue(ClaimTypes.Role);
+            
         }
         return await Task.FromResult(userInfo);
     }

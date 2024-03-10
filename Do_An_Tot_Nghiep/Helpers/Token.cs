@@ -22,6 +22,7 @@ public class Token : IToken
             new Claim(ClaimTypes.Name, user.UserName),
             new Claim(ClaimTypes.Role, user.Role),
             new Claim(ClaimTypes.Email, user.EmailAddress),
+            new Claim("Id", user.Id.ToString()),
         };
         var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Key").Value));
         

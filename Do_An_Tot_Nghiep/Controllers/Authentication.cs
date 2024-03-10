@@ -63,7 +63,6 @@ public class AuthenticationController : Controller
             var refreshToken = tokenService.GenerateRefreshToken();
 
             return Ok(new { AccessToken = token, RefreshToken = refreshToken, User = user });
-            
         }
         catch (Exception e)
         {
@@ -73,7 +72,7 @@ public class AuthenticationController : Controller
     }
 
     [HttpGet("GetUserInfo")]
-    [Authorize]
+    [Authorize("User")]
     public async Task<IActionResult> GetUserInfo()
     {
         try
