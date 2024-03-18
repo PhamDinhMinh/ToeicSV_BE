@@ -12,8 +12,9 @@ public class AuthService : IAuthService
     private readonly IDbServices _dbService;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private PublicContext context = new PublicContext();
-    
+
     private readonly IMapper _mapper;
+
     public AuthService(IDbServices dbService, IMapper mapper, IHttpContextAccessor httpContextAccessor)
     {
         _dbService = dbService;
@@ -25,16 +26,19 @@ public class AuthService : IAuthService
     {
         try
         {
-            var user = await context.Users.FirstOrDefaultAsync(u => u.UserName == input.UserName);
+            var user = await context.Users.FirstOrDefaultAsync(u =>
+                u.UserName == input.UserNameOrEmail || u.EmailAddress == input.UserNameOrEmail);
             if (user == null)
             {
                 return null;
             }
+
             var passwordVerified = await VerifyPassword(input.Password, user.Password);
             if (!passwordVerified)
             {
-                return null; 
+                return null;
             }
+
             return user;
         }
         catch (Exception e)
@@ -62,23 +66,23 @@ public class AuthService : IAuthService
             throw;
         }
     }
-    
+
     public async Task<Models.User> GetUserInfo()
     {
-        Models.User userInfo = new Models.User(); 
- 
+        Models.User userInfo = new Models.User();
+
         if (_httpContextAccessor.HttpContext != null)
         {
-            var user =  _httpContextAccessor.HttpContext.User;
+            var user = _httpContextAccessor.HttpContext.User;
             userInfo.Id = int.Parse(user.FindFirstValue("Id"));
             userInfo.UserName = user.FindFirstValue(ClaimTypes.Name);
             userInfo.EmailAddress = user.FindFirstValue(ClaimTypes.Email);
             userInfo.Role = user.FindFirstValue(ClaimTypes.Role);
-            
         }
+
         return await Task.FromResult(userInfo);
     }
-    
+
     public async Task<string> HashPassword(string password)
     {
         using (var sha256 = SHA256.Create())
@@ -92,16 +96,17 @@ public class AuthService : IAuthService
             }
         }
     }
-    
+
     public async Task<bool> VerifyPassword(string password, string storedPasswordHash)
     {
         string inputHashedPassword = await HashPassword(password);
         return inputHashedPassword == storedPasswordHash;
     }
-    
+
     public async Task<bool> GetByUserName(string userName)
     {
-        var userExists = await context.Users.AnyAsync(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
+        var userExists =
+            await context.Users.AnyAsync(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
         return userExists;
     }
 }
