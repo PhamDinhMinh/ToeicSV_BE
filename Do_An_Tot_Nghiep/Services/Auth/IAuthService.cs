@@ -1,6 +1,6 @@
-using Do_An_Tot_Nghiep.Dto.User;
+using Do_An_Tot_Nghiep.Dto.Auth;
 
-namespace Do_An_Tot_Nghiep.Services.User;
+namespace Do_An_Tot_Nghiep.Services.Auth;
 
 public interface IAuthService
 {

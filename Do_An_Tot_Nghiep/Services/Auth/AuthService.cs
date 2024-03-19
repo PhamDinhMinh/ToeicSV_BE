@@ -2,10 +2,10 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
-using Do_An_Tot_Nghiep.Dto.User;
+using Do_An_Tot_Nghiep.Dto.Auth;
 using Microsoft.EntityFrameworkCore;
 
-namespace Do_An_Tot_Nghiep.Services.User;
+namespace Do_An_Tot_Nghiep.Services.Auth;
 
 public class AuthService : IAuthService
 {

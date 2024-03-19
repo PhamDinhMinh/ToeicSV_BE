@@ -15,11 +15,11 @@ namespace Do_An_Tot_Nghiep.Controllers;
 public class AuthenticationController : Controller
 {
     private readonly IConfiguration _config;
-    private readonly IAuthService _userService;
-    public AuthenticationController(IConfiguration config, IAuthService userService)
+    private readonly IAuthService _authService;
+    public AuthenticationController(IConfiguration config, IAuthService authService)
     {
         _config = config;
-        _userService = userService;
+        _authService = authService;
     }
     
     [HttpPost("Register")]
@@ -31,7 +31,7 @@ public class AuthenticationController : Controller
             {
                 return BadRequest(ModelState);
             }
-            var user = await _userService.Register(input);
+            var user = await _authService.Register(input);
             if (user != null)
             {
                 return Ok("User registered successfully"); 
@@ -53,7 +53,7 @@ public class AuthenticationController : Controller
     {
         try
         {
-            var user = await _userService.Login(input);
+            var user = await _authService.Login(input);
             if (user == null)
             {
                 return BadRequest("Tên đăng nhập hoặc mật khẩu không đúng.");
@@ -77,7 +77,7 @@ public class AuthenticationController : Controller
     {
         try
         {
-            var user = await _userService.GetUserInfo();
+            var user = await _authService.GetUserInfo();
             return Ok(user);
         }
         catch (Exception e)
