@@ -1,6 +1,8 @@
 
 #nullable disable
 
+using System.Net;
+
 namespace NewProject.Services.Common
 {
   public class DataResult : IDataResult
@@ -15,7 +17,7 @@ namespace NewProject.Services.Common
 
     public int? TotalRecords { get; set; }
 
-    public int? Result_Code { get; set; }
+    public int? StatusCode { get; set; }
 
     public static DataResult ResultSuccess(
       object data,
@@ -63,12 +65,13 @@ namespace NewProject.Services.Common
       };
     }
 
-    public static DataResult ResultFail(string message)
+    public static DataResult ResultFail(string message, int? result_code = (int)HttpStatusCode.InternalServerError)
     {
       return new DataResult()
       {
         Message = message,
-        Success = false
+        Success = false,
+        StatusCode = result_code
       };
     }
 
@@ -82,7 +85,7 @@ namespace NewProject.Services.Common
         Data = data,
         Message = message,
         Success = result_code == 200,
-        Result_Code = new int?(result_code)
+        StatusCode = new int?(result_code)
       };
     }
   }

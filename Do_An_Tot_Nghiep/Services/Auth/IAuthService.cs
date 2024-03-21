@@ -8,4 +8,6 @@ public interface IAuthService
     Task<Models.User> Register(UserRegisterDto userRegister);
     Task<Models.User> GetUserInfo();
     Task<string> HashPassword(string password);
+    Task<bool> VerifyPassword(string password, string storedPasswordHash);
+
 }
