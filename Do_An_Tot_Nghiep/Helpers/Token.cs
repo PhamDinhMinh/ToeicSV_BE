@@ -19,9 +19,9 @@ public class Token : IToken
     {
         List<Claim> claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim("UserName", user.UserName),
             new Claim(ClaimTypes.Role, user.Role),
-            new Claim(ClaimTypes.Email, user.EmailAddress),
+            new Claim("EmailAddress", user.EmailAddress),
             new Claim("Id", user.Id.ToString()),
         };
         var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Key").Value));

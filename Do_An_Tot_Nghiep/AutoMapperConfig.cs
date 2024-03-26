@@ -19,6 +19,10 @@ public class AutoMapperProfile : Profile
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.Name)))
             .ForMember(dest => dest.PhoneNumber, 
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.PhoneNumber)))
+            .ForMember(dest => dest.ImageUrl, 
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.ImageUrl)))
+            .ForMember(dest => dest.CoverImageUrl, 
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.CoverImageUrl)))
             .ForMember(dest => dest.DateOfBirth,
                 opt => opt.Condition((src, dest, srcMember) => IsNotNullOrDefault(srcMember)));
     }

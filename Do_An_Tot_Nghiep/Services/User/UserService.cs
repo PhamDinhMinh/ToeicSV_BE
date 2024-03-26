@@ -27,13 +27,18 @@ public class UserService : IUserService
         _authService = authService;
     }
 
+    public async Task<object> GetUserById(int id)
+    {
+        return true;
+    }
+
     public async Task<object> Update(UserUpdateDto input)
     {
         try
         {
             if (_httpContextAccessor.HttpContext == null)
             {
-                return DataResult.ResultFail("Không xác định được người dùng", (int)HttpStatusCode.Unauthorized);
+                return DataResult.ResultFail("Ngươời dùng không tồn tại", (int)HttpStatusCode.Unauthorized);
             }
 
             var userId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"));

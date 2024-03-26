@@ -15,6 +15,13 @@ public class UserController : Controller
         _config = config;
         _userService = userService;
     }
+
+    [HttpGet("GetById")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var result = await _userService.GetUserById(id);
+        return Ok(result);
+    }
     
     [HttpPut("Update")]
     public async Task<IActionResult> Update([FromBody] UserUpdateDto input)

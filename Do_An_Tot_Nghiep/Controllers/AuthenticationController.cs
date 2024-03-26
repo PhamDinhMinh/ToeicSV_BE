@@ -72,7 +72,6 @@ public class AuthenticationController : Controller
     }
 
     [HttpGet("GetUserInfo")]
-    [Authorize("User")]
     public async Task<IActionResult> GetUserInfo()
     {
         try

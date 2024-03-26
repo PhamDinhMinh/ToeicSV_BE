@@ -1,9 +1,11 @@
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Auth;
 using Microsoft.EntityFrameworkCore;
+using NewProject.Services.Common;
 
 namespace Do_An_Tot_Nghiep.Services.Auth;
 
@@ -67,20 +69,16 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<Models.User> GetUserInfo()
+    public async Task<Object> GetUserInfo()
     {
-        Models.User userInfo = new Models.User();
-
         if (_httpContextAccessor.HttpContext != null)
         {
             var user = _httpContextAccessor.HttpContext.User;
-            userInfo.Id = int.Parse(user.FindFirstValue("Id"));
-            userInfo.UserName = user.FindFirstValue(ClaimTypes.Name);
-            userInfo.EmailAddress = user.FindFirstValue(ClaimTypes.Email);
-            userInfo.Role = user.FindFirstValue(ClaimTypes.Role);
+            var userInfo = await (from p in context.Users where (p.Id == int.Parse(user.FindFirstValue("Id"))) select p).FirstOrDefaultAsync();
+            return await Task.FromResult(userInfo); 
         }
 
-        return await Task.FromResult(userInfo);
+        return DataResult.ResultFail("Không tìm thấy người dùng", (int)HttpStatusCode.NotFound);;
     }
 
     public async Task<string> HashPassword(string password)

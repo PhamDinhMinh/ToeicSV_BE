@@ -6,7 +6,7 @@ public interface IAuthService
 {
     Task<Models.User> Login(UserLoginDto userLogin);
     Task<Models.User> Register(UserRegisterDto userRegister);
-    Task<Models.User> GetUserInfo();
+    Task<Object> GetUserInfo();
     Task<string> HashPassword(string password);
     Task<bool> VerifyPassword(string password, string storedPasswordHash);
 
