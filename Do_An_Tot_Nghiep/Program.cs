@@ -2,6 +2,7 @@ using System.Text;
 using Do_An_Tot_Nghiep.Helpers;
 using Do_An_Tot_Nghiep.Services;
 using Do_An_Tot_Nghiep.Services.Auth;
+using Do_An_Tot_Nghiep.Services.Grammar;
 using Do_An_Tot_Nghiep.Services.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -20,6 +21,7 @@ builder.Services.AddScoped<IDbServices, DbServices>();
 builder.Services.AddScoped<IToken, Token>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IGrammarService, GrammarService>();
 
 builder.Services.AddSwaggerGen(options =>
 {

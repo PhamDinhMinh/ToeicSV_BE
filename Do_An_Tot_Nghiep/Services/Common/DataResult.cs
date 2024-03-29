@@ -33,7 +33,7 @@ namespace NewProject.Services.Common
       };
     }
     public static DataResult ResultSuccess(
-      object data,
+      object? data,
       string message
       )
     {

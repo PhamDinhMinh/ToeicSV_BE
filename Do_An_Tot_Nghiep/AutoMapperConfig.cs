@@ -1,6 +1,7 @@
 using System.Collections;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Auth;
+using Do_An_Tot_Nghiep.Dto.Grammar;
 using Do_An_Tot_Nghiep.Dto.User;
 using Do_An_Tot_Nghiep.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,8 @@ public class AutoMapperProfile : Profile
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.CoverImageUrl)))
             .ForMember(dest => dest.DateOfBirth,
                 opt => opt.Condition((src, dest, srcMember) => IsNotNullOrDefault(srcMember)));
+        CreateMap<GrammarCreateDto, Grammar>().ReverseMap();
+
     }
 
     #region method helpers
