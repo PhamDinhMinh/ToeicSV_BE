@@ -47,7 +47,7 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
-    // options.OperationFilter<SecurityRequirementsOperationFilter>();
+    options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
 builder.Services.AddAuthorization(options =>
@@ -80,8 +80,8 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddAuthorization();
 builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();

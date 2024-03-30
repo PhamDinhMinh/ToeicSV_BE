@@ -3,7 +3,9 @@ using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Auth;
 using Do_An_Tot_Nghiep.Dto.Grammar;
 using Do_An_Tot_Nghiep.Dto.User;
+using Do_An_Tot_Nghiep.Enums.Grammar;
 using Do_An_Tot_Nghiep.Models;
+using Do_An_Tot_Nghiep.Services.Grammar;
 using Microsoft.Extensions.DependencyInjection;
 
 public class AutoMapperProfile : Profile
@@ -27,9 +29,15 @@ public class AutoMapperProfile : Profile
             .ForMember(dest => dest.DateOfBirth,
                 opt => opt.Condition((src, dest, srcMember) => IsNotNullOrDefault(srcMember)));
         CreateMap<GrammarCreateDto, Grammar>().ReverseMap();
-
+        CreateMap<GrammarUpdateWatchDto, Grammar>().ReverseMap();
+        CreateMap<GrammarUpdateDto, Grammar>()
+            .ForMember(dest => dest.Content,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.Content)))
+            .ForMember(dest => dest.Title,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.Title)))
+            .ForMember(dest => dest.Type,
+                opt => opt.Condition(src => src.Type.HasValue && Enum.IsDefined(typeof(EGRAMMAR_TYPE), src.Type)));
     }
-
     #region method helpers
 
     private static bool IsNotNullOrDefault<T>(T srcMember)

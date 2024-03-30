@@ -2,6 +2,7 @@ using System.Net;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Grammar;
 using Do_An_Tot_Nghiep.Services.Auth;
+using Microsoft.EntityFrameworkCore;
 using NewProject.Services.Common;
 
 namespace Do_An_Tot_Nghiep.Services.Grammar;
@@ -48,18 +49,71 @@ public class GrammarService : IGrammarService
         return DataResult.ResultSuccess("Thêm thành công");
     }
 
-    public Task<object> Update(GrammarUpdateDto input)
+    public async Task<object> Update(GrammarUpdateDto input)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var grammar = await context.Grammars.FindAsync(input.Id);
+            if (grammar==null)
+            {
+                return DataResult.ResultFail($"Grammar with ID {input.Id} not found.");
+            }
+            _mapper.Map(input, grammar);
+            // context.Entry(grammar).CurrentValues.SetValues(input);
+            context.Grammars.Update(grammar);
+            await context.SaveChangesAsync();
+            return DataResult.ResultSuccess(grammar, "Update thành công");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
-    public Task<object> UpdateWatch(GrammarUpdateWatchDto input)
+    public async Task<object> UpdateWatch(GrammarUpdateWatchDto input)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var grammarUpdateWatch = await context.Grammars.FindAsync(input.Id);
+            
+            if (grammarUpdateWatch == null)
+            {
+                return DataResult.ResultFail($"Grammar with ID {input.Id} not found.");
+            }
+            _mapper.Map(input, grammarUpdateWatch);
+            context.Grammars.Update(grammarUpdateWatch);
+            await context.SaveChangesAsync();
+            return DataResult.ResultSuccess( "Update thành công");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public async Task<object> Delete(int id)
     {
-        return true;
+        try
+        {
+            var grammar = await (from p in context.Grammars where (p.Id == id) select p).FirstOrDefaultAsync();
+
+            if (grammar != null)
+            {
+                context.Remove(grammar);
+                await context.SaveChangesAsync();
+                return DataResult.ResultSuccess(true, "");
+            }
+            else
+            {
+                return DataResult.ResultFail("Không tồn tại");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }

@@ -26,12 +26,39 @@ public class GrammarController: Controller
         return Ok(result);
     }
     
-    [Authorize("User")]
+    [Authorize]
+    [HttpPut("UpdateWatch")]
+    public async Task<IActionResult> UpdateWatch([FromBody] GrammarUpdateWatchDto input)
+    {
+        var result =  await _grammarService.UpdateWatch(input);
+
+        return Ok(result);
+    }    
+    
+    [Authorize("Admin")]
+    [HttpPut("Update")]
+    public async Task<IActionResult> Update([FromBody] GrammarUpdateDto input)
+    {
+        var result =  await _grammarService.Update(input);
+
+        return Ok(result);
+    }
+    
+    [Authorize]
     [HttpGet("GetAll")]
     public async Task<IActionResult> GetAllGrammar([FromQuery] GetGrammarDto parameters)
     {
         var result =  await _grammarService.GetAll(parameters);
 
         return Ok(result);
+    }
+
+    [Authorize("Admin")]
+    [HttpDelete("Delete")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result =  await _grammarService.Delete(id);
+
+        return Ok(result); 
     }
 }
