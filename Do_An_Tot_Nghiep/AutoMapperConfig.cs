@@ -1,8 +1,10 @@
 using System.Collections;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Auth;
+using Do_An_Tot_Nghiep.Dto.ExamTips;
 using Do_An_Tot_Nghiep.Dto.Grammar;
 using Do_An_Tot_Nghiep.Dto.User;
+using Do_An_Tot_Nghiep.Enums.ExamTips;
 using Do_An_Tot_Nghiep.Enums.Grammar;
 using Do_An_Tot_Nghiep.Models;
 using Do_An_Tot_Nghiep.Services.Grammar;
@@ -37,6 +39,14 @@ public class AutoMapperProfile : Profile
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.Title)))
             .ForMember(dest => dest.Type,
                 opt => opt.Condition(src => src.Type.HasValue && Enum.IsDefined(typeof(EGRAMMAR_TYPE), src.Type)));
+        CreateMap<ExamTipsCreateDto, ExamTip>().ReverseMap();
+        CreateMap<ExamTipsUpdateDto, ExamTip>()
+            .ForMember(dest => dest.Description,
+                opt => opt.MapFrom(src => src.Description != null && src.Description.Length > 0 ? src.Description : null))
+            .ForMember(dest => dest.Title,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.Title)))
+            .ForMember(dest => dest.Type,
+                opt => opt.Condition(src => src.Type.HasValue && Enum.IsDefined(typeof(EEXAM_TIPS_TYPE), src.Type)));
     }
     #region method helpers
 

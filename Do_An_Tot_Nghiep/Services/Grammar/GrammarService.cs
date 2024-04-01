@@ -1,7 +1,6 @@
 using System.Net;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Grammar;
-using Do_An_Tot_Nghiep.Services.Auth;
 using Microsoft.EntityFrameworkCore;
 using NewProject.Services.Common;
 
@@ -11,14 +10,12 @@ public class GrammarService : IGrammarService
 {
     private readonly IDbServices _dbService;
     private PublicContext context = new PublicContext();
-    private readonly IAuthService _authService;
     private readonly IMapper _mapper;
 
-    public GrammarService(IDbServices dbService, IMapper mapper, IAuthService authService)
+    public GrammarService(IDbServices dbService, IMapper mapper)
     {
         _dbService = dbService;
         _mapper = mapper;
-        _authService = authService;
     }
 
     public async Task<object> GetAll(GetGrammarDto parameters)
@@ -101,7 +98,7 @@ public class GrammarService : IGrammarService
 
             if (grammar != null)
             {
-                context.Remove(grammar);
+                context.Grammars.Remove(grammar);
                 await context.SaveChangesAsync();
                 return DataResult.ResultSuccess(true, "");
             }
