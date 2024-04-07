@@ -4,6 +4,7 @@ using Do_An_Tot_Nghiep.Services;
 using Do_An_Tot_Nghiep.Services.Auth;
 using Do_An_Tot_Nghiep.Services.ExamTip;
 using Do_An_Tot_Nghiep.Services.Grammar;
+using Do_An_Tot_Nghiep.Services.Post;
 using Do_An_Tot_Nghiep.Services.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -24,6 +25,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGrammarService, GrammarService>();
 builder.Services.AddScoped<IExamTipsService, ExamTipsService>();
+builder.Services.AddScoped<IPostService, PostService>();
 
 builder.Services.AddSwaggerGen(options =>
 {

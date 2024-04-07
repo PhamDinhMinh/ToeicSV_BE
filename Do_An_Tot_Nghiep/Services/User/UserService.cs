@@ -99,7 +99,7 @@ public class UserService : IUserService
             {
                 if (id == int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")))
                 {
-                    context.Remove(user);
+                    context.Users.Remove(user);
                     await context.SaveChangesAsync();
                     return DataResult.ResultSuccess(true, "Xoá tài khoản thành công", (int)HttpStatusCode.OK);
                 }
