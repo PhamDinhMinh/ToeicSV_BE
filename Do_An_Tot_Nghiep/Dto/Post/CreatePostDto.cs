@@ -4,12 +4,12 @@ namespace Do_An_Tot_Nghiep.Dto.Post;
 
 public class CreatePostDto
 {
-    public string ContentPost { get; set; }
-    public List<string> ImageUrls { get; set; }
+    public string? ContentPost { get; set; }
+    public List<string>? ImageUrls { get; set; }
     public int? BackGroundId { get; set; }
     public int? EmotionId { get; set; }
     public ESTATE_OF_POST? State { get; set; } = ESTATE_OF_POST.Verified;
     public int CreatorUserId { get; set; }
-    public int SharedPostId { get; set; }
+    public int? SharedPostId { get; set; }
     public DateTime? CreationTime { get; set; }
 }

@@ -8,5 +8,4 @@ public interface IUserService
     Task<object> Update(UserUpdateDto user);
     Task<object> ChangePassword(UserChangePasswordDto userChangePassword);
     Task<object> Delete(int id);
-    
 }

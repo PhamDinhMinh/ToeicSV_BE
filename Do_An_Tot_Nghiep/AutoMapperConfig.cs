@@ -4,6 +4,7 @@ using Do_An_Tot_Nghiep.Dto.Auth;
 using Do_An_Tot_Nghiep.Dto.ExamTips;
 using Do_An_Tot_Nghiep.Dto.Grammar;
 using Do_An_Tot_Nghiep.Dto.Post;
+using Do_An_Tot_Nghiep.Dto.PostComment;
 using Do_An_Tot_Nghiep.Dto.User;
 using Do_An_Tot_Nghiep.Enums.ExamTips;
 using Do_An_Tot_Nghiep.Enums.Grammar;
@@ -49,6 +50,8 @@ public class AutoMapperProfile : Profile
             .ForMember(dest => dest.Type,
                 opt => opt.Condition(src => src.Type.HasValue && Enum.IsDefined(typeof(EEXAM_TIPS_TYPE), src.Type)));
         CreateMap<CreatePostDto, Post>().ReverseMap();
+
+        CreateMap<CreatePostCommentDto, PostComment>().ReverseMap();
     }
     #region method helpers
 

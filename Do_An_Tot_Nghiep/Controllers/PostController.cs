@@ -27,6 +27,26 @@ public class PostController: Controller
     }
     
     [Authorize]
+    [HttpGet("GetAll")]
+    public async Task<IActionResult> GetAllPost([FromQuery] GetListPostDto parameters)
+    {
+        var result =  await _postService.GetListPost(parameters);
+
+        return Ok(result);
+    }
+    
+    
+
+    [Authorize]
+    [HttpGet("GetUserWallPost")]
+    public async Task<IActionResult> GetUserWallPost([FromQuery]int id)
+    {
+        var result =  await _postService.GetUserWallPost(id);
+
+        return Ok(result);
+    }
+    
+    [Authorize]
     [HttpDelete("Delete")]
     public async Task<Object> Delete(int id)
     {
