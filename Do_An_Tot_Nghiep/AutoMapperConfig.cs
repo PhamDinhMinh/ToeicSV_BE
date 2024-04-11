@@ -5,12 +5,11 @@ using Do_An_Tot_Nghiep.Dto.ExamTips;
 using Do_An_Tot_Nghiep.Dto.Grammar;
 using Do_An_Tot_Nghiep.Dto.Post;
 using Do_An_Tot_Nghiep.Dto.PostComment;
+using Do_An_Tot_Nghiep.Dto.PostReact;
 using Do_An_Tot_Nghiep.Dto.User;
 using Do_An_Tot_Nghiep.Enums.ExamTips;
 using Do_An_Tot_Nghiep.Enums.Grammar;
 using Do_An_Tot_Nghiep.Models;
-using Do_An_Tot_Nghiep.Services.Grammar;
-using Microsoft.Extensions.DependencyInjection;
 
 public class AutoMapperProfile : Profile
 {
@@ -50,8 +49,20 @@ public class AutoMapperProfile : Profile
             .ForMember(dest => dest.Type,
                 opt => opt.Condition(src => src.Type.HasValue && Enum.IsDefined(typeof(EEXAM_TIPS_TYPE), src.Type)));
         CreateMap<CreatePostDto, Post>().ReverseMap();
-
+        CreateMap<UpdatePostDto, Post>()
+            .ForMember(dest => dest.ContentPost,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.ContentPost)))
+            .ForMember(dest => dest.BackGroundId,
+                opt => opt.Condition(src => src.BackGroundId.HasValue))
+            .ForMember(dest => dest.EmotionId,
+                opt => opt.Condition(src => src.EmotionId.HasValue))
+            .ForMember(dest => dest.State,
+                opt => opt.Condition(src => src.State.HasValue))
+            .ForMember(dest => dest.ImageUrls,
+                opt => opt.Condition(src => src.ImageUrls != null && src.ImageUrls.Any()));
         CreateMap<CreatePostCommentDto, PostComment>().ReverseMap();
+        
+        CreateMap<CreatePostReactDto, PostReact>().ReverseMap();
     }
     #region method helpers
 

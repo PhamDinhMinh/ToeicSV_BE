@@ -35,13 +35,29 @@ public class PostController: Controller
         return Ok(result);
     }
     
-    
+    [Authorize]
+    [HttpGet("GetListPostUser")]
+    public async Task<IActionResult> GetListPostUser([FromQuery] GetListPostUserDto parameters)
+    {
+        var result =  await _postService.GetListPostUser(parameters);
 
+        return Ok(result);
+    }
+    
     [Authorize]
     [HttpGet("GetUserWallPost")]
     public async Task<IActionResult> GetUserWallPost([FromQuery]int id)
     {
         var result =  await _postService.GetUserWallPost(id);
+
+        return Ok(result);
+    }
+    
+    [Authorize]
+    [HttpPut("Update")]
+    public async Task<IActionResult> Update([FromBody] UpdatePostDto input)
+    {
+        var result =  await _postService.Update(input);
 
         return Ok(result);
     }

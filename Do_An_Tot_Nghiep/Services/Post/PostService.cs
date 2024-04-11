@@ -8,7 +8,7 @@ using NewProject.Services.Common;
 
 namespace Do_An_Tot_Nghiep.Services.Post;
 
-public class PostService: IPostService
+public class PostService : IPostService
 {
     private readonly IDbServices _dbService;
     private PublicContext context = new PublicContext();
@@ -16,11 +16,13 @@ public class PostService: IPostService
     private readonly IMapper _mapper;
     private readonly IPostCommentService _postCommentService;
 
-    public PostService(IDbServices dbService, IMapper mapper, IPostCommentService postCommentService)
+    public PostService(IDbServices dbService, IMapper mapper, IPostCommentService postCommentService,
+        IHttpContextAccessor httpContextAccessor)
     {
         _dbService = dbService;
         _mapper = mapper;
         _postCommentService = postCommentService;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<object> Create(CreatePostDto input)
@@ -29,7 +31,7 @@ public class PostService: IPostService
 
         newPost.CreationTime = DateTime.UtcNow;
         await context.Posts.AddAsync(newPost);
-        await context.SaveChangesAsync(); 
+        await context.SaveChangesAsync();
         return DataResult.ResultSuccess(newPost, "Tạo mới thành công");
     }
 
@@ -37,56 +39,133 @@ public class PostService: IPostService
     {
         try
         {
-            var query = from post in context.Posts
-                join user in context.Users
-                    on post.CreatorUserId equals user.Id
-                select new
-                {
-                    Id = post.Id,
-                    ContentPost = post.ContentPost,
-                    State = post.State,
-                    ImageUrls = post.ImageUrls,
-                    EmotionId = post.EmotionId,
-                    BackGroundId = post.BackGroundId,
-                    SharedPostId = post.SharedPostId,
-                    CountComment = (from comment in context.PostComments
-                        where comment.PostId == post.Id
-                        select comment).AsQueryable().Count(),
-                    User = new 
-                    {
-                        Id = user.Id,
-                        Name = user.Name,
-                        CoverImageUrl = user.CoverImageUrl,
-                        ImageUrl = user.ImageUrl,
-                        CreationTime = user.CreationTime
-                    },
-                    CreationTime = post.CreationTime
-                };
-            
-            if (!string.IsNullOrEmpty(parameters.Keyword))
+            if (_httpContextAccessor.HttpContext != null)
             {
-                query = query.Where(x => x.ContentPost.Contains(parameters.Keyword));
+                var query = from post in context.Posts
+                    join user in context.Users
+                        on post.CreatorUserId equals user.Id
+                    select new
+                    {
+                        Id = post.Id,
+                        ContentPost = post.ContentPost,
+                        State = post.State,
+                        ImageUrls = post.ImageUrls,
+                        EmotionId = post.EmotionId,
+                        BackGroundId = post.BackGroundId,
+                        SharedPostId = post.SharedPostId,
+                        CountComment = (from comment in context.PostComments
+                            where comment.PostId == post.Id
+                            select comment).AsQueryable().Count(),
+                        CountReact = (from react in context.PostReacts
+                            where react.PostId == post.Id
+                            select react).AsQueryable().Count(),
+                        ReactStates = context.PostReacts
+                            .Where(x => x.PostId == post.Id && x.CommentId == null && x.ReactState.HasValue)
+                            .GroupBy(x => x.ReactState.Value)
+                            .OrderByDescending(g => g.Count())
+                            .Take(4)
+                            .Select(grp => new {
+                                State = grp.Key,
+                                Count = grp.Count()
+                            }).ToList(),
+                        UserReact = context.PostReacts
+                            .Where(x => x.PostId == post.Id &&
+                                        x.CreatorUserId ==
+                                        int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")) &&
+                                        x.CommentId == null)
+                            .Select(react => react.ReactState)
+                            .FirstOrDefault(),
+                        User = new
+                        {
+                            Id = user.Id,
+                            Name = user.Name,
+                            CoverImageUrl = user.CoverImageUrl,
+                            ImageUrl = user.ImageUrl,
+                            CreationTime = user.CreationTime
+                        },
+                        CreationTime = post.CreationTime
+                    };
+
+                if (!string.IsNullOrEmpty(parameters.Keyword))
+                {
+                    query = query.Where(x => x.ContentPost.Contains(parameters.Keyword));
+                }
+
+                query = query.OrderByDescending(x => x.CreationTime);
+                var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
+
+                return DataResult.ResultSuccess(result, "", query.Count());
             }
-            query = query.OrderByDescending(x => x.CreationTime);
-            var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
-            // foreach (var item in result)
-            // {
-            //     item.
-            //         .Where(x => x.PostId == item.Id && x.CommentId == null && x.ReactState.HasValue)
-            //         .Select(x => x.ReactState.Value).ToList().GroupBy(x => x).Select(grp => new StateOrder()
-            //         {
-            //             State = grp.Key,
-            //             Count = grp.Count()
-            //         }).ToList();
-            //     item.User.FriendshipState = friends.Where(x => x.FriendUserId == item.CreatorUserId).Select(x => x.State).FirstOrDefault();
-            //     item.TenantZone = item.TenantId == YootekSession.TenantId ? tenantZone : allTenants.FirstOrDefault(x =>
-            // }
-            
-            
-            return DataResult.ResultSuccess(result, "", query.Count());
+
+            return DataResult.ResultFail("Đã có lỗi xảy ra");
         }
         catch (Exception e)
         {
+            throw;
+        }
+    }
+
+    public async Task<object> GetListPostUser(GetListPostUserDto parameters)
+    {
+        try
+        {
+            if (_httpContextAccessor.HttpContext != null)
+            {
+                var query = (from post in context.Posts
+                        join user in context.Users
+                            on post.CreatorUserId equals user.Id
+                        select new
+                        {
+                            Id = post.Id,
+                            ContentPost = post.ContentPost,
+                            State = post.State,
+                            ImageUrls = post.ImageUrls,
+                            EmotionId = post.EmotionId,
+                            BackGroundId = post.BackGroundId,
+                            SharedPostId = post.SharedPostId,
+                            CountComment = (from comment in context.PostComments
+                                where comment.PostId == post.Id
+                                select comment).AsQueryable().Count(),
+                            CountReact = (from react in context.PostReacts
+                                where react.PostId == post.Id
+                                select react).AsQueryable().Count(),
+                            UserReact = context.PostReacts
+                                .Where(x => x.PostId == post.Id &&
+                                            x.CreatorUserId ==
+                                            int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")) &&
+                                            x.CommentId == null)
+                                .Select(react => react.ReactState)
+                                .FirstOrDefault(),
+                            ReactStates = context.PostReacts
+                                .Where(x => x.PostId == post.Id && x.CommentId == null && x.ReactState.HasValue)
+                                .GroupBy(x => x.ReactState.Value)
+                                .OrderByDescending(g => g.Count())
+                                .Take(4)
+                                .Select(grp => new {
+                                    State = grp.Key,
+                                    Count = grp.Count()
+                                }).ToList(),
+                            User = new
+                            {
+                                Id = user.Id,
+                                Name = user.Name,
+                                CoverImageUrl = user.CoverImageUrl,
+                                ImageUrl = user.ImageUrl,
+                                CreationTime = user.CreationTime
+                            },
+                            CreationTime = post.CreationTime
+                        })
+                    .Where(x => x.User.Id == parameters.UserId);
+                query = query.OrderByDescending(x => x.CreationTime);
+                var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
+                return DataResult.ResultSuccess(result, "", query.Count());
+            }
+
+            return DataResult.ResultFail("Đã có lỗi xảy ra");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
             throw;
         }
     }
@@ -99,13 +178,32 @@ public class PostService: IPostService
             if (user == null)
                 return null;
             var totalPosts = await context.Posts.CountAsync(post => post.CreatorUserId == id);
-            var result = new 
+            var result = new
             {
                 User = user,
                 TotalPosts = totalPosts,
             };
 
             return DataResult.ResultSuccess(result, "");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+
+    public async Task<object> Update(UpdatePostDto input)
+    {
+        try
+        {
+            var post = await context.Posts.FirstOrDefaultAsync(p => p.Id == input.Id);
+            if (post == null) return DataResult.ResultFail("Không tìm thấy bài viết");
+            var newPost = _mapper.Map(input, post);
+            context.Posts.Update(newPost);
+            await context.SaveChangesAsync();
+            return DataResult.ResultSuccess(newPost, "Update thành công");
         }
         catch (Exception e)
         {
@@ -138,6 +236,7 @@ public class PostService: IPostService
                         (int)HttpStatusCode.Forbidden);
                 }
             }
+
             return DataResult.ResultFail("Bạn không có quyền thực hiện thao tác này", (int)HttpStatusCode.Forbidden);
         }
         catch (Exception e)
