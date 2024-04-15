@@ -40,7 +40,7 @@ public class GrammarService : IGrammarService
     {
         var newGrammar = _mapper.Map<Models.Grammar>(input);
 
-        newGrammar.CreationTime = DateTime.UtcNow;
+        newGrammar.CreationTime = DateTime.Now;
         await context.Grammars.AddAsync(newGrammar);
         await context.SaveChangesAsync(); 
         return DataResult.ResultSuccess("Thêm thành công");

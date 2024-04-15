@@ -35,6 +35,16 @@ public class PostCommentService : IPostCommentService
                         ParentCommentId = postComment.ParentCommentId,
                         PostId = postComment.PostId,
                         CreatorUserId = postComment.CreatorUserId,
+                        CountChildComment =
+                            context.PostComments.Count(child => child.ParentCommentId == postComment.Id),
+                        CountReact = (from react in context.PostReacts
+                            where react.CommentId == postComment.Id &&  react.ReactState != null
+                            select react).AsQueryable().Count(),
+                        UserReact = context.PostReacts
+                            .Where(x => x.CommentId == postComment.Id &&
+                                        x.CreatorUserId ==
+                                        int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")))
+                            .Select(react => react.ReactState).FirstOrDefault(),
                         User = new
                         {
                             Id = user.Id,
@@ -46,16 +56,21 @@ public class PostCommentService : IPostCommentService
                         CreationTime = postComment.CreationTime
                     })
                 .Where(x => x.PostId == parameters.PostId);
-              
+
             if (!string.IsNullOrEmpty(parameters.Keyword))
             {
                 query = query.Where(x => x.Comment.Contains(parameters.Keyword));
             }
+
             if (parameters.ParentCommentId.HasValue)
             {
-                query = query.Where(x=>x.ParentCommentId == parameters.ParentCommentId);
+                query = query.Where(x => x.ParentCommentId == parameters.ParentCommentId);
             }
-            
+            else
+            {
+                query = query.Where(x => x.ParentCommentId == null);
+            }
+
             query = query.OrderByDescending(x => x.CreationTime);
             var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
             return DataResult.ResultSuccess(result, "", query.Count());
@@ -81,10 +96,10 @@ public class PostCommentService : IPostCommentService
                         p.Id == request.ParentCommentId && p.PostId == request.PostId);
                 if (parentComment == null) throw new Exception("Parent comment not found");
             }
-            
-            request.CreationTime = DateTime.UtcNow;
+            request.CreatorUserId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"));
+            request.CreationTime = DateTime.Now;
             await context.PostComments.AddAsync(request);
-            await context.SaveChangesAsync(); 
+            await context.SaveChangesAsync();
             return DataResult.ResultSuccess(request, "Bình luận thành công");
         }
         catch (Exception e)
@@ -119,6 +134,7 @@ public class PostCommentService : IPostCommentService
                         (int)HttpStatusCode.Forbidden);
                 }
             }
+
             return DataResult.ResultFail("Bạn không có quyền thực hiện thao tác này",
                 (int)HttpStatusCode.Forbidden);
         }
@@ -154,6 +170,7 @@ public class PostCommentService : IPostCommentService
                         (int)HttpStatusCode.Forbidden);
                 }
             }
+
             return DataResult.ResultFail("Bạn không có quyền thực hiện thao tác này",
                 (int)HttpStatusCode.Forbidden);
         }

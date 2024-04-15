@@ -22,7 +22,7 @@ public class ExamTipsService : IExamTipsService
         {
             var newExamTips = _mapper.Map<Models.ExamTip>(input);
 
-            newExamTips.CreationTime = DateTime.UtcNow;
+            newExamTips.CreationTime = DateTime.Now;
             await context.ExamTips.AddAsync(newExamTips);
             await context.SaveChangesAsync(); 
             return DataResult.ResultSuccess("Thêm thành công");

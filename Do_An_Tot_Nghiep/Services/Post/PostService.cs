@@ -29,7 +29,8 @@ public class PostService : IPostService
     {
         var newPost = _mapper.Map<Models.Post>(input);
 
-        newPost.CreationTime = DateTime.UtcNow;
+        newPost.CreationTime = DateTime.Now;
+        newPost.CreatorUserId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"));
         await context.Posts.AddAsync(newPost);
         await context.SaveChangesAsync();
         return DataResult.ResultSuccess(newPost, "Tạo mới thành công");
@@ -127,7 +128,7 @@ public class PostService : IPostService
                                 where comment.PostId == post.Id
                                 select comment).AsQueryable().Count(),
                             CountReact = (from react in context.PostReacts
-                                where react.PostId == post.Id
+                                where react.PostId == post.Id && react.ReactState != null
                                 select react).AsQueryable().Count(),
                             UserReact = context.PostReacts
                                 .Where(x => x.PostId == post.Id &&
