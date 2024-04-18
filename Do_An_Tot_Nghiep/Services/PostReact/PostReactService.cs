@@ -69,8 +69,9 @@ public class PostReactService : IPostReactService
             {
                 if (_httpContextAccessor.HttpContext != null)
                 {
-                    var check = context.PostReacts.FirstOrDefault(x =>
-                        x.CreatorUserId == int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"))
+                    var userId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"));
+                    var check = await context.PostReacts.FirstOrDefaultAsync(x =>
+                        x.CreatorUserId == userId
                         && ((input.PostId.HasValue && x.PostId == input.PostId) ||
                             (input.CommentId.HasValue && x.CommentId == input.CommentId)));
                     if (check != null) context.PostReacts.Remove(check);
@@ -83,32 +84,30 @@ public class PostReactService : IPostReactService
                 }
             }
 
-            if (input.PostId > 0)
+            if (input.PostId.HasValue && input.PostId.Value > 0)
             {
                 if (_httpContextAccessor.HttpContext != null)
                 {
-                    var post = context.Posts.FirstOrDefaultAsync(p => p.Id == input.PostId);
+                    var post = await context.Posts.FirstOrDefaultAsync(p => p.Id == input.PostId);
                     if (post == null) throw new Exception("Post not found");
-                    var check = context.PostReacts.FirstOrDefault(x =>
-                        x.PostId == input.PostId && x.CreatorUserId ==
-                        int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")));
+                    var userId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"));
+                    var check = await context.PostReacts.FirstOrDefaultAsync(x =>
+                        x.PostId == input.PostId && x.CreatorUserId == userId);
                     if (check == null)
                     {
                         var react = new Models.PostReact()
                         {
                             PostId = input.PostId,
                             ReactState = input.ReactState,
-                            CreatorUserId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")),
-                            CreationTime = DateTime.UtcNow,
+                            CreatorUserId = userId,
+                            CreationTime = DateTime.Now,
                         };
                         await context.PostReacts.AddAsync(react);
-                        await context.SaveChangesAsync();
                     }
                     else
                     {
                         check.ReactState = input.ReactState;
                         context.PostReacts.Update(check);
-                        await context.SaveChangesAsync();
                     }
                 }
             }
@@ -118,9 +117,9 @@ public class PostReactService : IPostReactService
                 if (comment == null) throw new Exception("Comment not found");
                 if (_httpContextAccessor.HttpContext != null)
                 {
-                    var check = context.PostReacts.FirstOrDefault(x =>
-                        x.CommentId == input.CommentId && x.CreatorUserId ==
-                        int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")));
+                    var userId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"));
+                    var check = await context.PostReacts.FirstOrDefaultAsync(x =>
+                        x.CommentId == input.CommentId && x.CreatorUserId == userId);
                     if (check == null)
                     {
                         var react = new Models.PostReact()
@@ -128,17 +127,15 @@ public class PostReactService : IPostReactService
                             PostId = input.PostId,
                             ReactState = input.ReactState,
                             CommentId = input.CommentId,
-                            CreatorUserId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")),
+                            CreatorUserId = userId,
                             CreationTime = DateTime.UtcNow,
                         };
                         await context.PostReacts.AddAsync(react);
-                        await context.SaveChangesAsync();
                     }
                     else
                     {
                         check.ReactState = input.ReactState;
                         context.PostReacts.Update(check);
-                        await context.SaveChangesAsync();
                     }
                 }
             }

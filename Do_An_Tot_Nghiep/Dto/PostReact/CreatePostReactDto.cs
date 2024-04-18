@@ -10,5 +10,4 @@ public class CreatePostReactDto
     public int? PostId { get; set; }
     public bool IsCancel { get; set; }
     public int CreatorUserId { get; set; }
-    public int? CreatorTenantId { get; set; }
 }
