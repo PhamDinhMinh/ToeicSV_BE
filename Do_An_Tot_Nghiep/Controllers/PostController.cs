@@ -45,6 +45,15 @@ public class PostController: Controller
     }
     
     [Authorize]
+    [HttpGet("GetPostById")]
+    public async Task<IActionResult> GetListPostUser([FromQuery]int id)
+    {
+        var result =  await _postService.GetPostById(id);
+
+        return Ok(result);
+    }
+    
+    [Authorize]
     [HttpGet("GetUserWallPost")]
     public async Task<IActionResult> GetUserWallPost([FromQuery]int id)
     {

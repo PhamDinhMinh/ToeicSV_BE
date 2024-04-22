@@ -171,6 +171,63 @@ public class PostService : IPostService
         }
     }
 
+    public async Task<object> GetPostById(int id)
+    {
+        try
+        {
+           var postQuery = from post in context.Posts
+                        join user in context.Users
+                            on post.CreatorUserId equals user.Id
+                        where post.Id == id
+                        select new
+                        {
+                            Id = post.Id,
+                            ContentPost = post.ContentPost,
+                            State = post.State,
+                            ImageUrls = post.ImageUrls,
+                            EmotionId = post.EmotionId,
+                            BackGroundId = post.BackGroundId,
+                            SharedPostId = post.SharedPostId,
+                            CountComment = context.PostComments.Count(comment => comment.PostId == post.Id),
+                            CountReact = context.PostReacts.Count(react => react.PostId == post.Id && react.ReactState != null),
+                            UserReact = context.PostReacts
+                                .Where(x => x.PostId == post.Id &&
+                                            x.CreatorUserId == int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")) &&
+                                            x.CommentId == null)
+                                .Select(react => react.ReactState)
+                                .FirstOrDefault(),
+                            ReactStates = context.PostReacts
+                                .Where(x => x.PostId == post.Id && x.CommentId == null && x.ReactState.HasValue)
+                                .GroupBy(x => x.ReactState.Value)
+                                .OrderByDescending(g => g.Count())
+                                .Take(4)
+                                .Select(grp => new {
+                                    State = grp.Key,
+                                    Count = grp.Count()
+                                }).ToList(),
+                            User = new
+                            {
+                                Id = user.Id,
+                                Name = user.Name,
+                                CoverImageUrl = user.CoverImageUrl,
+                                ImageUrl = user.ImageUrl,
+                                CreationTime = user.CreationTime
+                            },
+                            CreationTime = post.CreationTime
+                        };
+           var result = await postQuery.FirstOrDefaultAsync();
+           if (result == null)
+               return DataResult.ResultFail("Không tìm thấy bài viết");
+           return DataResult.ResultSuccess(result, "Bài viết");
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        } 
+    }
+
     public async Task<object> GetUserWallPost(int id)
     {
         try
