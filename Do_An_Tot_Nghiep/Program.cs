@@ -12,6 +12,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using Do_An_Tot_Nghiep.Services.Upload;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +34,18 @@ builder.Services.AddScoped<IExamTipsService, ExamTipsService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IPostCommentService, PostCommentService>();
 builder.Services.AddScoped<IPostReactService, PostReactService>();
+builder.Services.AddScoped<IUploadService, UploadService>();
+
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddSingleton(sp => {
+    var cloudinarySettings = sp.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+    var account = new Account(
+        cloudinarySettings.CloudName,
+        cloudinarySettings.ApiKey,
+        cloudinarySettings.ApiSecret
+    );
+    return new Cloudinary(account);
+});
 
 builder.Services.AddSwaggerGen(options =>
 {
