@@ -38,7 +38,7 @@ public class UserService : IUserService
         {
             if (_httpContextAccessor.HttpContext == null)
             {
-                return DataResult.ResultFail("Ngươời dùng không tồn tại", (int)HttpStatusCode.Unauthorized);
+                return DataResult.ResultFail("Người dùng không tồn tại", (int)HttpStatusCode.Unauthorized);
             }
 
             var userId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"));
@@ -50,6 +50,32 @@ public class UserService : IUserService
             context.Entry(user).CurrentValues.SetValues(input);
             await context.SaveChangesAsync();
             return DataResult.ResultSuccess(user, "Update thành công");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<object> UpdateAvatar(AvatarUpdateDto input)
+    {
+        try
+        {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                return DataResult.ResultFail("Người dùng không tồn tại", (int)HttpStatusCode.Unauthorized);
+            }
+            var userId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"));
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return DataResult.ResultFail("Không tìm thấy người dùng", (int)HttpStatusCode.NotFound);
+            }
+            user.ImageUrl = input.ImageUrl;
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+            return DataResult.ResultSuccess(user,"Avatar updated successfully");
         }
         catch (Exception e)
         {
@@ -75,7 +101,7 @@ public class UserService : IUserService
         var passwordVerified = await _authService.VerifyPassword(input.CurrentPassword, user.Password);
         if (!passwordVerified)
         {
-            return DataResult.ResultFail("Mật khẩu hiện tại không chính xác", (int)HttpStatusCode.BadRequest);
+            return null;
         }
 
         user.Password = await _authService.HashPassword(input.NewPassword);

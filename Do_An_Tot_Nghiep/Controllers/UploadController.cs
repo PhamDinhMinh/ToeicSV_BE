@@ -1,6 +1,7 @@
 using CloudinaryDotNet;
 using Do_An_Tot_Nghiep.Helpers;
 using Do_An_Tot_Nghiep.Services.Upload;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -23,6 +24,7 @@ public class UploadController : Controller
         _uploadService = uploadService;
     }
     
+    [Authorize]
     [HttpPost("UploadImages")]
     public async Task<IActionResult> UploadImage(List<IFormFile> files)
     {
@@ -31,6 +33,7 @@ public class UploadController : Controller
         return Ok(result);
     }
     
+    [Authorize]
     [HttpPost("UploadFiles")]
     public async Task<IActionResult> UploadFile(List<IFormFile> files)
     {
