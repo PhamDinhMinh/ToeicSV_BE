@@ -70,7 +70,8 @@ public class ExamTipsService : IExamTipsService
                 {
                     query = query.Where(x => x.Title.Contains(parameters.Keyword));
                 }
-                query = query.OrderByDescending(x => x.CreationTime);
+                // query = query.OrderByDescending(x => x.CreationTime);
+                query = query.OrderBy(x => x.Type);
                 var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
 
                 return DataResult.ResultSuccess(result, "", query.Count());;
