@@ -7,6 +7,7 @@ public interface IUserService
     Task<object> GetUserById(int id);
     Task<object> Update(UserUpdateDto user);
     Task<object> UpdateAvatar(AvatarUpdateDto avatarUrl);
+    Task<object> UpdateCoverAvatar(CoverAvatarUpdateDto avatarUrl);
     Task<object> ChangePassword(UserChangePasswordDto userChangePassword);
     Task<object> Delete(int id);
 }

@@ -84,6 +84,31 @@ public class UserService : IUserService
         }
     }
 
+    public async Task<object> UpdateCoverAvatar(CoverAvatarUpdateDto input)
+    {
+        try
+        {
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                return DataResult.ResultFail("Người dùng không tồn tại", (int)HttpStatusCode.Unauthorized);
+            }
+            var userId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"));
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return DataResult.ResultFail("Không tìm thấy người dùng", (int)HttpStatusCode.NotFound);
+            }
+            user.CoverImageUrl = input.CoverImageUrl;
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
+            return DataResult.ResultSuccess(user,"Avatar updated successfully");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
     public async Task<object> ChangePassword(UserChangePasswordDto input)
     {
         if (_httpContextAccessor.HttpContext == null)

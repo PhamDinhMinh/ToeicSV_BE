@@ -36,6 +36,24 @@ public class UserController : Controller
     }
     
     [Authorize]
+    [HttpPut("UpdateAvatar")]
+    public async Task<IActionResult> UpdateAvatar([FromBody] AvatarUpdateDto input)
+    {
+        var result =  await _userService.UpdateAvatar(input);
+
+        return Ok(result);
+    }
+    
+    [Authorize]
+    [HttpPut("UpdateCoverAvatar")]
+    public async Task<IActionResult> UpdateCoverAvatar([FromBody] CoverAvatarUpdateDto input)
+    {
+        var result =  await _userService.UpdateCoverAvatar(input);
+
+        return Ok(result);
+    }
+    
+    [Authorize]
     [HttpPost("ChangePassword")]
     public async Task<IActionResult> ChangePassword([FromBody] UserChangePasswordDto input)
     {
