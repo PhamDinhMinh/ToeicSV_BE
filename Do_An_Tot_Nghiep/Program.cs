@@ -14,6 +14,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Do_An_Tot_Nghiep.Services.Question;
 using Do_An_Tot_Nghiep.Services.Upload;
 using Microsoft.Extensions.Options;
 
@@ -35,6 +36,7 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IPostCommentService, PostCommentService>();
 builder.Services.AddScoped<IPostReactService, PostReactService>();
 builder.Services.AddScoped<IUploadService, UploadService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddSingleton(sp => {
