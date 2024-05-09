@@ -9,6 +9,6 @@ public class AnswerToeic
     public int  IdQuestion { get; set; }
     public bool IsBoolean { get; set; }
     public string? Content { get; set; }
-    public int STTAnswer { get; set; }
+    public int? STTAnswer { get; set; }
     public string? Transcription { get; set; }
 }

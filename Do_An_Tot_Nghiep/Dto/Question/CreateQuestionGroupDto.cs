@@ -1,16 +1,15 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using Do_An_Tot_Nghiep.Enums.Question;
 
-namespace Do_An_Tot_Nghiep.Models;
+namespace Do_An_Tot_Nghiep.Dto.Question;
 
-[Table("group_question", Schema = "do_an")]
-public class GroupQuestion
+public class CreateQuestionGroupDto
 {
-    public int Id { get; set; }
     public string? Content { get; set; }
     public PART_TOEIC PartId { get; set; }
     public List<int>? Type { get; set; }
     public string[]? ImageUrl { get; set; }
     public string? AudioUrl { get; set; }
     public int? IdExam { get; set; }
+    public List<QuestionOnGroupDto> Question { get; set; }
 }
+

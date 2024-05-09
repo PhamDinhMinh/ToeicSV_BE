@@ -8,8 +8,8 @@ public class QuestionToeic
 {
     public int Id { get; set; }
     public string? Content { get; set; }
-    public PART_TOEIC PartId { get; set; }
-    public int? Type { get; set; }
+    public PART_TOEIC? PartId { get; set; }
+    public List<int>? Type { get; set; }
     public string[]? ImageUrl { get; set; }
     public string? AudioUrl { get; set; }
     public int? IdGroupQuestion { get; set; }

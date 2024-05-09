@@ -20,10 +20,19 @@ public class QuestionController : Controller
     }
     
     [Authorize("Admin")]
-    [HttpPost("Create")]
-    public async Task<IActionResult> CreatePost([FromBody] CreateQuestionDto input)
+    [HttpPost("CreateQuestionSingle")]
+    public async Task<IActionResult> CreateQuestionSingle([FromBody] CreateQuestionSingleDto input)
     {
-        var result =  await _questionService.CreateQuestion(input);
+        var result =  await _questionService.CreateQuestionSingle(input);
+
+        return Ok(result);
+    }
+    
+    [Authorize("Admin")]
+    [HttpPost("CreateQuestionGroup")]
+    public async Task<IActionResult> CreateQuestionGroup([FromBody] CreateQuestionGroupDto input)
+    {
+        var result =  await _questionService.CreateQuestionGroup(input);
 
         return Ok(result);
     }
