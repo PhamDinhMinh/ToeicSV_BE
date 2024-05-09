@@ -16,6 +16,7 @@ public class ExamTipsService : IExamTipsService
         _dbService = dbService;
         _mapper = mapper;
     }
+
     public async Task<object> Create(ExamTipsCreateDto input)
     {
         try
@@ -24,7 +25,7 @@ public class ExamTipsService : IExamTipsService
 
             newExamTips.CreationTime = DateTime.Now;
             await context.ExamTips.AddAsync(newExamTips);
-            await context.SaveChangesAsync(); 
+            await context.SaveChangesAsync();
             return DataResult.ResultSuccess("Thêm thành công");
         }
         catch (Exception e)
@@ -33,16 +34,17 @@ public class ExamTipsService : IExamTipsService
             throw;
         }
     }
-    
+
     public async Task<object> Update(ExamTipsUpdateDto input)
     {
         try
         {
             var examTip = await context.ExamTips.FindAsync(input.Id);
-            if (examTip==null)
+            if (examTip == null)
             {
                 return DataResult.ResultFail($"Grammar with ID {input.Id} not found.");
             }
+
             _mapper.Map(input, examTip);
             context.ExamTips.Update(examTip);
             await context.SaveChangesAsync();
@@ -59,23 +61,22 @@ public class ExamTipsService : IExamTipsService
     {
         try
         {
+            var query = context.ExamTips.AsQueryable();
+            if (parameters.Type.HasValue)
             {
-                var query = context.ExamTips.AsQueryable();
-                if (parameters.Type.HasValue)
-                {
-                    query = query.Where(x => x.Type == parameters.Type);
-                }
-
-                if (!string.IsNullOrEmpty(parameters.Keyword))
-                {
-                    query = query.Where(x => x.Title.Contains(parameters.Keyword));
-                }
-                // query = query.OrderByDescending(x => x.CreationTime);
-                query = query.OrderBy(x => x.Type);
-                var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
-
-                return DataResult.ResultSuccess(result, "", query.Count());;
+                query = query.Where(x => x.Type == parameters.Type);
             }
+
+            if (!string.IsNullOrEmpty(parameters.Keyword))
+            {
+                query = query.Where(x => x.Title.Contains(parameters.Keyword));
+            }
+
+            // query = query.OrderByDescending(x => x.CreationTime);
+            query = query.OrderBy(x => x.Type);
+            var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
+
+            return DataResult.ResultSuccess(result, "", query.Count());
         }
         catch (Exception e)
         {
@@ -89,7 +90,7 @@ public class ExamTipsService : IExamTipsService
         try
         {
             var examTips = await (from p in context.ExamTips where (p.Id == id) select p).FirstOrDefaultAsync();
-    
+
             if (examTips != null)
             {
                 context.ExamTips.Remove(examTips);

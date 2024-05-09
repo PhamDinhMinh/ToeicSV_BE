@@ -81,4 +81,54 @@ public class QuestionService : IQuestionService
 
         return DataResult.ResultSuccess( "Tạo nhóm câu hỏi đơn thành công");
     }
+
+    public async Task<object> GetListQuestionSingle(GetListQuestionSingleDto parameters)
+    {
+        try
+        {
+            var query = from question in context.QuestionToeics
+                join answers in context.AnswerToeics on question.Id equals answers.IdQuestion into answersGroup
+                select new
+                {
+                    Id = question.Id,
+                    Content = question.Content,
+                    PartId = question.PartId,
+                    ImageUrl = question.ImageUrl,
+                    AudioUrl = question.AudioUrl,
+                    Transcription = question.Transcription,
+                    NumberSTT = question.NumberSTT,
+                    Type = question.Type,
+                    Answers = answersGroup.Select(a => new
+                    {
+                        Id = a.Id,
+                        Content = a.Content,
+                        IsBoolean = a.IsBoolean,
+                        Transcription = a.Transcription
+                    }).ToList()
+                };
+            if (parameters.Type.HasValue)
+            {
+                query = query.Where(x => x.Type.Contains(parameters.Type.Value));
+            }
+            if (parameters.PartId.HasValue)
+            {
+                query = query.Where(x => x.PartId == parameters.PartId);
+            }
+            if (!string.IsNullOrEmpty(parameters.Keyword))
+            {
+                query = query.Where(x => x.Content.Contains(parameters.Keyword));
+            }
+            
+            var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
+            
+            return DataResult.ResultSuccess(result, "", query.Count());
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+    
+    
 }
