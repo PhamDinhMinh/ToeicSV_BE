@@ -52,13 +52,16 @@ public class QuestionService : IQuestionService
         await context.GroupQuestions.AddAsync(groupQuestion);
         await context.SaveChangesAsync();
         
-        foreach (var questionDto in parameters.Question)
+        foreach (var questionDto in parameters.Questions)
         {
             var question = new QuestionToeic
             {
                 NumberSTT = questionDto.NumberSTT,
                 Index = questionDto.Index,
-                Transcription = questionDto.Transcription
+                Transcription = questionDto.Transcription,
+                Type = questionDto.Type,
+                PartId = parameters.PartId,
+                IdGroupQuestion = groupQuestion.Id
             };
             await context.QuestionToeics.AddAsync(question);
 
@@ -129,6 +132,9 @@ public class QuestionService : IQuestionService
             throw;
         }
     }
-    
-    
+
+    public Task<object> GetListQuestion(GetListQuestionDto parameters)
+    {
+        throw new NotImplementedException();
+    }
 }

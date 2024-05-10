@@ -2,6 +2,7 @@ namespace Do_An_Tot_Nghiep.Dto.Question;
 
 public class QuestionOnGroupDto
 {
+    public List<int>? Type { get; set; }
     public string? Transcription { get; set; }
     public int? Index { get; set; } = 1;
     public int? NumberSTT { get; set; }

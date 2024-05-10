@@ -64,9 +64,9 @@ public class AutoMapperProfile : Profile
         CreateMap<CreateQuestionSingleDto, QuestionToeic>().ReverseMap();
         CreateMap<CreateQuestionSingleDto, AnswerToeic>().ReverseMap();
 
-        CreateMap<CreateGroupQuestionDto, GroupQuestion>().ReverseMap();
-        CreateMap<CreateGroupQuestionDto, QuestionToeic>().ReverseMap();
-        CreateMap<CreateGroupQuestionDto, AnswerToeic>().ReverseMap();
+        CreateMap<CreateQuestionGroupDto, GroupQuestion>().ReverseMap();
+        CreateMap<CreateQuestionGroupDto, QuestionToeic>().ReverseMap();
+        CreateMap<CreateQuestionGroupDto, AnswerToeic>().ReverseMap();
 
     }
     #region method helpers
