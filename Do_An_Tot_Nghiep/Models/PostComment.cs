@@ -1,10 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Do_An_Tot_Nghiep.Models;
 
-[Table("post_comment", Schema = "do_an")]
+[Table("post_comment")]
 public class PostComment
 {
+    [Key]
     public int Id { get; set; }
     public string Comment { get; set; }
     public int? ParentCommentId { get; set; }

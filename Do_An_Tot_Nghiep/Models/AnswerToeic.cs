@@ -1,10 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Do_An_Tot_Nghiep.Models;
 
-[Table("answer_toeic", Schema = "do_an")]
+[Table("answer_toeic")]
 public class AnswerToeic
 {
+    [Key]
     public int Id { get; set; }
     public int  IdQuestion { get; set; }
     public bool IsBoolean { get; set; }

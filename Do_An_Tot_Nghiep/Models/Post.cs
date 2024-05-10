@@ -1,11 +1,13 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Do_An_Tot_Nghiep.Enums.Post;
 
 namespace Do_An_Tot_Nghiep.Models;
 
-[Table("post", Schema = "do_an")]
+[Table("post")]
 public class Post
 {
+    [Key]
     public int Id { get; set; }
     public string ContentPost { get; set; }
     public List<string> ImageUrls { get; set; }

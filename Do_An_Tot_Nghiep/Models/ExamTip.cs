@@ -1,12 +1,14 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Do_An_Tot_Nghiep.Enums.ExamTips;
 
 namespace Do_An_Tot_Nghiep.Models;
 
-[Table("exam_tips", Schema = "do_an")]
+[Table("exam_tips")]
 
 public class ExamTip
 {
+    [Key]
     public int Id { get; set; }
     public string Title { get; set; }
     public string[] Description { get; set; }
