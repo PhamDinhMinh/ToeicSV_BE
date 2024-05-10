@@ -44,5 +44,14 @@ public class QuestionController : Controller
         var result =  await _questionService.GetListQuestionSingle(parameters);
 
         return Ok(result);
+    }   
+    
+    [Authorize]
+    [HttpGet("GetListQuestionGroup")]
+    public async Task<IActionResult> GetListQuestionGroup([FromQuery] GetListQuestionGroupDto parameters)
+    {
+        var result =  await _questionService.GetListQuestionGroup(parameters);
+
+        return Ok(result);
     }
 }

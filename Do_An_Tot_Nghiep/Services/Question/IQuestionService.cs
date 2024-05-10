@@ -7,6 +7,6 @@ public interface IQuestionService
     Task<object> CreateQuestionSingle(CreateQuestionSingleDto input);
     Task<object> CreateQuestionGroup(CreateQuestionGroupDto input);
     Task<object> GetListQuestionSingle(GetListQuestionSingleDto parameters);
-
+    Task<object> GetListQuestionGroup(GetListQuestionGroupDto parameters);
     Task<object> GetListQuestion(GetListQuestionDto parameters);
 }

@@ -101,6 +101,7 @@ public class QuestionService : IQuestionService
                     Transcription = question.Transcription,
                     NumberSTT = question.NumberSTT,
                     Type = question.Type,
+                    IdGroupQuestion = question.IdGroupQuestion,
                     Answers = answersGroup.Select(a => new
                     {
                         Id = a.Id,
@@ -109,10 +110,56 @@ public class QuestionService : IQuestionService
                         Transcription = a.Transcription
                     }).ToList()
                 };
+                query = query.Where(x => x.IdGroupQuestion == null);
             if (parameters.Type.HasValue)
             {
                 query = query.Where(x => x.Type.Contains(parameters.Type.Value));
             }
+            if (parameters.PartId.HasValue)
+            {
+                query = query.Where(x => x.PartId == parameters.PartId);
+            }
+            if (!string.IsNullOrEmpty(parameters.Keyword))
+            {
+                query = query.Where(x => x.Content.Contains(parameters.Keyword));
+            }
+            
+            var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
+            
+            return DataResult.ResultSuccess(result, "", query.Count());
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<object> GetListQuestionGroup(GetListQuestionGroupDto parameters)
+    {
+        try
+        {
+            var query = from groupQuestion in context.GroupQuestions
+                join question in context.QuestionToeics on groupQuestion.Id equals question.IdGroupQuestion into manyQuestion
+                // join answers in context.AnswerToeics on question.Id equals answers.IdQuestion into answersGroup
+                select new
+                {
+                    Id = groupQuestion.Id,
+                    Content = groupQuestion.Content,
+                    PartId = groupQuestion.PartId,
+                    ImageUrl = groupQuestion.ImageUrl,
+                    AudioUrl = groupQuestion.AudioUrl,
+                    IdExam = groupQuestion.IdExam,
+                    Question = manyQuestion.Select(q => new
+                    {
+                        Id = q.Id,
+                        NumberSTT = q.NumberSTT,
+                        Content = q.Content,
+                        Type = q.Type,
+                        Transcription = q.Transcription,
+                        Answers = context.AnswerToeics.Where(a => a.IdQuestion == q.Id).ToList()
+                    }).ToList()
+                };
             if (parameters.PartId.HasValue)
             {
                 query = query.Where(x => x.PartId == parameters.PartId);
