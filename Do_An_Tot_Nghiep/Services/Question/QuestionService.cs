@@ -141,7 +141,6 @@ public class QuestionService : IQuestionService
         {
             var query = from groupQuestion in context.GroupQuestions
                 join question in context.QuestionToeics on groupQuestion.Id equals question.IdGroupQuestion into manyQuestion
-                // join answers in context.AnswerToeics on question.Id equals answers.IdQuestion into answersGroup
                 select new
                 {
                     Id = groupQuestion.Id,
@@ -150,7 +149,7 @@ public class QuestionService : IQuestionService
                     ImageUrl = groupQuestion.ImageUrl,
                     AudioUrl = groupQuestion.AudioUrl,
                     IdExam = groupQuestion.IdExam,
-                    Question = manyQuestion.Select(q => new
+                    Questions = manyQuestion.Select(q => new
                     {
                         Id = q.Id,
                         NumberSTT = q.NumberSTT,

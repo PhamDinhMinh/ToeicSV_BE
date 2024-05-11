@@ -37,7 +37,7 @@ public class QuestionController : Controller
         return Ok(result);
     }
     
-    [Authorize]
+    [Authorize("Admin")]
     [HttpGet("GetListQuestionSingle")]
     public async Task<IActionResult> GetListQuestionSingle([FromQuery] GetListQuestionSingleDto parameters)
     {
@@ -46,7 +46,7 @@ public class QuestionController : Controller
         return Ok(result);
     }   
     
-    [Authorize]
+    [Authorize("Admin")]
     [HttpGet("GetListQuestionGroup")]
     public async Task<IActionResult> GetListQuestionGroup([FromQuery] GetListQuestionGroupDto parameters)
     {
