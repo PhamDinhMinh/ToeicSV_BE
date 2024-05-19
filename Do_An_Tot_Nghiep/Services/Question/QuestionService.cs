@@ -1,5 +1,6 @@
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Question;
+using Do_An_Tot_Nghiep.Enums.Question;
 using Do_An_Tot_Nghiep.Models;
 using NewProject.Services.Common;
 
@@ -23,6 +24,7 @@ public class QuestionService : IQuestionService
     public async Task<object> CreateQuestionSingle(CreateQuestionSingleDto parameters)
     {
         var question = _mapper.Map<QuestionToeic>(parameters);
+        question.CreationTime = DateTime.Now;
 
         await context.QuestionToeics.AddAsync(question);
         await context.SaveChangesAsync();
@@ -56,12 +58,15 @@ public class QuestionService : IQuestionService
         {
             var question = new QuestionToeic
             {
+                AudioUrl = parameters.AudioUrl,
+                ImageUrl = parameters.ImageUrl,
                 NumberSTT = questionDto.NumberSTT,
                 Index = questionDto.Index,
                 Transcription = questionDto.Transcription,
                 Type = questionDto.Type,
                 PartId = parameters.PartId,
-                IdGroupQuestion = groupQuestion.Id
+                IdGroupQuestion = groupQuestion.Id,
+                CreationTime = DateTime.Now
             };
             await context.QuestionToeics.AddAsync(question);
 
@@ -102,6 +107,7 @@ public class QuestionService : IQuestionService
                     NumberSTT = question.NumberSTT,
                     Type = question.Type,
                     IdGroupQuestion = question.IdGroupQuestion,
+                    CreationTime = question.CreationTime,
                     Answers = answersGroup.Select(a => new
                     {
                         Id = a.Id,
@@ -111,6 +117,7 @@ public class QuestionService : IQuestionService
                     }).ToList()
                 };
                 query = query.Where(x => x.IdGroupQuestion == null);
+                query = query.OrderByDescending(x => x.CreationTime);
             if (parameters.Type.HasValue)
             {
                 query = query.Where(x => x.Type.Contains(parameters.Type.Value));
@@ -182,5 +189,63 @@ public class QuestionService : IQuestionService
     public Task<object> GetListQuestion(GetListQuestionDto parameters)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<object> GetQuestionUser(GetQuestionUserDto parameters)
+    {
+        try
+        {
+            if (parameters.PartId == PART_TOEIC.Part1 || parameters.PartId == PART_TOEIC.Part2 ||
+                parameters.PartId == PART_TOEIC.Part5)
+            {
+                var query = from question in context.QuestionToeics
+                    join answers in context.AnswerToeics on question.Id equals answers.IdQuestion into answersGroup
+                    select new
+                    {
+                        Id = question.Id,
+                        Content = question.Content,
+                        PartId = question.PartId,
+                        ImageUrl = question.ImageUrl,
+                        AudioUrl = question.AudioUrl,
+                        NumberSTT = question.NumberSTT,
+                        Type = question.Type,
+                        IdGroupQuestion = question.IdGroupQuestion,
+                        Transcription = question.Transcription,
+                        Answers = answersGroup.Select(a => new
+                        {
+                            Id = a.Id,
+                            Content = a.Content,
+                            IsBoolean = a.IsBoolean,
+                            Transcription = a.Transcription
+                        }).ToList(),
+                    };
+
+                if (parameters.Type.HasValue)
+                {
+                    query = query.Where(x => x.Type.Contains(parameters.Type.Value));
+                }
+
+                if (parameters.PartId.HasValue)
+                {
+                    query = query.Where(x => x.PartId == parameters.PartId);
+                }
+
+                if (!string.IsNullOrEmpty(parameters.Keyword))
+                {
+                    query = query.Where(x => x.Content.Contains(parameters.Keyword));
+                }
+
+                query = query.OrderBy(x => x.IdGroupQuestion).ThenBy((x) => Guid.NewGuid());
+                var result = query.Take(parameters.MaxResultCount).ToList();
+                return DataResult.ResultSuccess(result, "", result.Count);
+            }
+            
+            return DataResult.ResultSuccess( "hehe", "Thành công"); 
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }

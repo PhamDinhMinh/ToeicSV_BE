@@ -9,4 +9,7 @@ public interface IQuestionService
     Task<object> GetListQuestionSingle(GetListQuestionSingleDto parameters);
     Task<object> GetListQuestionGroup(GetListQuestionGroupDto parameters);
     Task<object> GetListQuestion(GetListQuestionDto parameters);
+    
+    // User
+    Task<object> GetQuestionUser(GetQuestionUserDto parameters);
 }

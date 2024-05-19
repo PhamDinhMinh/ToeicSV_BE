@@ -17,4 +17,5 @@ public class QuestionToeic
     public int? Index { get; set; } = 1;
     public int? NumberSTT { get; set; }
     public int? IdExam { get; set; }
+    public DateTime? CreationTime { get; set; }
 }

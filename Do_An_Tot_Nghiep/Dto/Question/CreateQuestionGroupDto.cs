@@ -10,5 +10,6 @@ public class CreateQuestionGroupDto
     public string? AudioUrl { get; set; }
     public int? IdExam { get; set; }
     public List<QuestionOnGroupDto> Questions { get; set; }
+    public DateTime? CreationTime { get; set; }
 }
 

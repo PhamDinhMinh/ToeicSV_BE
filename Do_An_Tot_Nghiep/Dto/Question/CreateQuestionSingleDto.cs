@@ -14,4 +14,5 @@ public class CreateQuestionSingleDto
     public int? NumberSTT { get; set; }
     public int? IdExam { get; set; }
     public List<CreateAnswerDto>? Answers { get; set; }
+    public DateTime? CreationTime { get; set; }
 }

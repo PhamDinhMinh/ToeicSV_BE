@@ -54,4 +54,13 @@ public class QuestionController : Controller
 
         return Ok(result);
     }
+    
+    [Authorize]
+    [HttpGet("GetQuestionUser")]
+    public async Task<IActionResult> GetQuestionUser([FromQuery] GetQuestionUserDto parameters)
+    {
+        var result =  await _questionService.GetQuestionUser(parameters);
+
+        return Ok(result);
+    }
 }
