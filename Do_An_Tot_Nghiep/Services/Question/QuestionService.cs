@@ -58,8 +58,7 @@ public class QuestionService : IQuestionService
         {
             var question = new QuestionToeic
             {
-                AudioUrl = parameters.AudioUrl,
-                ImageUrl = parameters.ImageUrl,
+                Content = questionDto.Content,
                 NumberSTT = questionDto.NumberSTT,
                 Index = questionDto.Index,
                 Transcription = questionDto.Transcription,
@@ -69,6 +68,7 @@ public class QuestionService : IQuestionService
                 CreationTime = DateTime.Now
             };
             await context.QuestionToeics.AddAsync(question);
+            await context.SaveChangesAsync();
 
             foreach (var answerDto in questionDto.Answers)
             {

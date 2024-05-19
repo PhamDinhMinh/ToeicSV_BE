@@ -13,4 +13,6 @@ public class GroupQuestion
     public string[]? ImageUrl { get; set; }
     public string? AudioUrl { get; set; }
     public int? IdExam { get; set; }
+    public string? Transcription { get; set; }
+    public DateTime? CreationTime { get; set; }
 }
