@@ -16,6 +16,7 @@ public class PublicContext : DbContext
     public DbSet<GroupQuestion> GroupQuestions { get; set; }
     public DbSet<ExamToeic> ExamToeics { get; set; }
     public DbSet<ExamQuestion> ExamQuestions { get; set; }
+    public DbSet<Result> Results { get; set; }
     private const string connectionString = @"User ID=minhpd;Password=123qwe;Host=103.124.95.246;Port=5432;Database=minh;Pooling=true;MinPoolSize=0;MaxPoolSize=100;Connection Lifetime=0;";
     protected override void  OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

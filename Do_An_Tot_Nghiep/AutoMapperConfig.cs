@@ -2,11 +2,13 @@ using System.Collections;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Auth;
 using Do_An_Tot_Nghiep.Dto.ExamTips;
+using Do_An_Tot_Nghiep.Dto.ExamToeic;
 using Do_An_Tot_Nghiep.Dto.Grammar;
 using Do_An_Tot_Nghiep.Dto.Post;
 using Do_An_Tot_Nghiep.Dto.PostComment;
 using Do_An_Tot_Nghiep.Dto.PostReact;
 using Do_An_Tot_Nghiep.Dto.Question;
+using Do_An_Tot_Nghiep.Dto.Result;
 using Do_An_Tot_Nghiep.Dto.User;
 using Do_An_Tot_Nghiep.Enums.ExamTips;
 using Do_An_Tot_Nghiep.Enums.Grammar;
@@ -67,6 +69,9 @@ public class AutoMapperProfile : Profile
         CreateMap<CreateQuestionGroupDto, GroupQuestion>().ReverseMap();
         CreateMap<CreateQuestionGroupDto, QuestionToeic>().ReverseMap();
         CreateMap<CreateQuestionGroupDto, AnswerToeic>().ReverseMap();
+
+        CreateMap<ExamCreateDto, ExamToeic>().ReverseMap();
+
 
     }
     #region method helpers
