@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Question;
 using Do_An_Tot_Nghiep.Enums.Question;
@@ -45,7 +46,7 @@ public class QuestionService : IQuestionService
 
         await context.SaveChangesAsync();
 
-        return DataResult.ResultSuccess( "Tạo câu hỏi đơn thành công");
+        return DataResult.ResultSuccess("Tạo câu hỏi đơn thành công");
     }
 
     public async Task<object> CreateQuestionGroup(CreateQuestionGroupDto parameters)
@@ -53,7 +54,7 @@ public class QuestionService : IQuestionService
         var groupQuestion = _mapper.Map<GroupQuestion>(parameters);
         await context.GroupQuestions.AddAsync(groupQuestion);
         await context.SaveChangesAsync();
-        
+
         foreach (var questionDto in parameters.Questions)
         {
             var question = new QuestionToeic
@@ -87,7 +88,7 @@ public class QuestionService : IQuestionService
 
         await context.SaveChangesAsync();
 
-        return DataResult.ResultSuccess( "Tạo nhóm câu hỏi đơn thành công");
+        return DataResult.ResultSuccess("Tạo nhóm câu hỏi đơn thành công");
     }
 
     public async Task<object> GetListQuestionSingle(GetListQuestionSingleDto parameters)
@@ -116,23 +117,25 @@ public class QuestionService : IQuestionService
                         Transcription = a.Transcription
                     }).ToList()
                 };
-                query = query.Where(x => x.IdGroupQuestion == null);
-                query = query.OrderByDescending(x => x.CreationTime);
+            query = query.Where(x => x.IdGroupQuestion == null);
+            query = query.OrderByDescending(x => x.CreationTime);
             if (parameters.Type.HasValue)
             {
                 query = query.Where(x => x.Type.Contains(parameters.Type.Value));
             }
+
             if (parameters.PartId.HasValue)
             {
                 query = query.Where(x => x.PartId == parameters.PartId);
             }
+
             if (!string.IsNullOrEmpty(parameters.Keyword))
             {
                 query = query.Where(x => x.Content.Contains(parameters.Keyword));
             }
-            
+
             var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
-            
+
             return DataResult.ResultSuccess(result, "", query.Count());
         }
         catch (Exception e)
@@ -147,7 +150,8 @@ public class QuestionService : IQuestionService
         try
         {
             var query = from groupQuestion in context.GroupQuestions
-                join question in context.QuestionToeics on groupQuestion.Id equals question.IdGroupQuestion into manyQuestion
+                join question in context.QuestionToeics on groupQuestion.Id equals question.IdGroupQuestion into
+                    manyQuestion
                 select new
                 {
                     Id = groupQuestion.Id,
@@ -170,13 +174,14 @@ public class QuestionService : IQuestionService
             {
                 query = query.Where(x => x.PartId == parameters.PartId);
             }
+
             if (!string.IsNullOrEmpty(parameters.Keyword))
             {
                 query = query.Where(x => x.Content.Contains(parameters.Keyword));
             }
-            
+
             var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
-            
+
             return DataResult.ResultSuccess(result, "", query.Count());
         }
         catch (Exception e)
@@ -239,8 +244,67 @@ public class QuestionService : IQuestionService
                 var result = query.Take(parameters.MaxResultCount).ToList();
                 return DataResult.ResultSuccess(result, "", result.Count);
             }
-            
-            return DataResult.ResultSuccess( "hehe", "Thành công"); 
+
+            if (parameters.PartId == PART_TOEIC.Part3 || parameters.PartId == PART_TOEIC.Part4 ||
+                parameters.PartId == PART_TOEIC.Part6)
+            {
+                var queryGroup = from groupQ in context.GroupQuestions
+                    join questions in context.QuestionToeics on groupQ.Id equals questions.IdGroupQuestion into
+                        questionOnGroup
+                    from qg in questionOnGroup.DefaultIfEmpty()
+                    join answers in context.AnswerToeics on qg.Id equals answers.IdQuestion into answerOnQuestion
+                    from aq in answerOnQuestion.DefaultIfEmpty()
+                    select new
+                    {
+                        Id = groupQ.Id,
+                        AudioUrl = groupQ.AudioUrl,
+                        ImageUrl = groupQ.ImageUrl,
+                        Content = groupQ.Content,
+                        PartId = groupQ.PartId,
+                        Transcription = groupQ.Transcription,
+                        Questions = context.QuestionToeics.Where(q => q.IdGroupQuestion == groupQ.Id).Select(q => new
+                        {
+                            Id = q.Id,
+                            Content = q.Content,
+                            NumberSTT = q.NumberSTT,
+                            Type = q.Type,
+                            Transcription = q.Transcription,
+                            Answers = context.AnswerToeics.Where(a => a.IdQuestion == q.Id).Select(a => new
+                            {
+                                Id = a.Id,
+                                Content = a.Content,
+                                IsBoolean = a.IsBoolean,
+                                Transcription = a.Transcription
+                            }).ToList()
+                        }).ToList()
+                    };
+
+                if (parameters.PartId.HasValue)
+                {
+                    queryGroup = queryGroup.Where(x => x.PartId == parameters.PartId);
+                }
+
+                if (!string.IsNullOrEmpty(parameters.Keyword))
+                {
+                    queryGroup = queryGroup.Where(x => x.Content.Contains(parameters.Keyword));
+                }
+
+                queryGroup = queryGroup.OrderBy((x) => Guid.NewGuid());
+
+                if (parameters.PartId == PART_TOEIC.Part3 || parameters.PartId == PART_TOEIC.Part4)
+                {
+                    var result = queryGroup.Take(parameters.MaxResultCount / 3).ToList();
+                    return DataResult.ResultSuccess(result, "", result.Count);
+                }
+
+                if (parameters.PartId == PART_TOEIC.Part6)
+                {
+                    var result = queryGroup.Take(parameters.MaxResultCount / 4).ToList();
+                    return DataResult.ResultSuccess(result, "", result.Count);
+                }
+            }
+
+            return DataResult.ResultSuccess("Thành công");
         }
         catch (Exception e)
         {
