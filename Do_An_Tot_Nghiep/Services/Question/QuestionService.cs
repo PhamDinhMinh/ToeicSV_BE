@@ -304,6 +304,64 @@ public class QuestionService : IQuestionService
                 }
             }
 
+            if (parameters.PartId == PART_TOEIC.Part7)
+            {
+                var queryGroup = from groupQ in context.GroupQuestions
+                    where groupQ.PartId == PART_TOEIC.Part7
+                    select new
+                    {
+                        Id = groupQ.Id,
+                        AudioUrl = groupQ.AudioUrl,
+                        ImageUrl = groupQ.ImageUrl,
+                        Content = groupQ.Content,
+                        PartId = groupQ.PartId,
+                        Transcription = groupQ.Transcription,
+                        Questions = context.QuestionToeics
+                            .Where(q => q.IdGroupQuestion == groupQ.Id)
+                            .Select(q => new
+                            {
+                                Id = q.Id,
+                                Content = q.Content,
+                                NumberSTT = q.NumberSTT,
+                                Type = q.Type,
+                                Transcription = q.Transcription,
+                                Answers = context.AnswerToeics
+                                    .Where(a => a.IdQuestion == q.Id)
+                                    .Select(a => new
+                                    {
+                                        Id = a.Id,
+                                        Content = a.Content,
+                                        IsBoolean = a.IsBoolean,
+                                        Transcription = a.Transcription
+                                    }).ToList()
+                            }).ToList()
+                    };
+
+                // Áp dụng các điều kiện lọc nếu có
+                if (!string.IsNullOrEmpty(parameters.Keyword))
+                {
+                    queryGroup = queryGroup.Where(x => x.Content.Contains(parameters.Keyword));
+                }
+
+                // Phân loại nhóm câu hỏi theo số lượng câu hỏi
+                var groupsWith2Questions = queryGroup.Where(g => g.Questions.Count == 2).OrderBy(x => Guid.NewGuid())
+                    .Take(3).ToList();
+                var groupsWith3Questions = queryGroup.Where(g => g.Questions.Count == 3).OrderBy(x => Guid.NewGuid())
+                    .Take(5).ToList();
+                var groupsWith4Questions = queryGroup.Where(g => g.Questions.Count == 4).OrderBy(x => Guid.NewGuid())
+                    .Take(2).ToList();
+                var groupsWith5Questions = queryGroup.Where(g => g.Questions.Count == 5).OrderBy(x => Guid.NewGuid())
+                    .Take(5).ToList();
+
+                // Kết hợp tất cả các nhóm đã chọn
+                var result = groupsWith2Questions.Concat(groupsWith3Questions)
+                    .Concat(groupsWith4Questions)
+                    .Concat(groupsWith5Questions)
+                    .ToList();
+
+                return DataResult.ResultSuccess(result, "", result.Count);
+            }
+
             return DataResult.ResultSuccess("Thành công");
         }
         catch (Exception e)
