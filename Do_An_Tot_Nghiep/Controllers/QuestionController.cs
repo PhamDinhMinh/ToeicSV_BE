@@ -55,6 +55,15 @@ public class QuestionController : Controller
         return Ok(result);
     }
     
+    [Authorize("Admin")]
+    [HttpPost("ImportExcelQuestionSingle")]
+    public async Task<IActionResult> ImportExcelQuestionSingle([FromForm] ImportExcelDto  parameters)
+    {
+        var result =  await _questionService.ImportExcelQuestionSingle(parameters);
+
+        return Ok(result);
+    }
+    
     [Authorize]
     [HttpGet("GetQuestionUser")]
     public async Task<IActionResult> GetQuestionUser([FromQuery] GetQuestionUserDto parameters)

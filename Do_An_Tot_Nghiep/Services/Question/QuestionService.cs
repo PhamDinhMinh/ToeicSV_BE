@@ -3,7 +3,9 @@ using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Question;
 using Do_An_Tot_Nghiep.Enums.Question;
 using Do_An_Tot_Nghiep.Models;
+using Microsoft.EntityFrameworkCore;
 using NewProject.Services.Common;
+using OfficeOpenXml;
 
 namespace Do_An_Tot_Nghiep.Services.Question;
 
@@ -194,6 +196,123 @@ public class QuestionService : IQuestionService
     public Task<object> GetListQuestion(GetListQuestionDto parameters)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<object> ImportExcelQuestionSingle(ImportExcelDto input)
+    {
+        try
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            IFormFile file = input.File;
+            string fileName = file.FileName;
+            string fileExt = Path.GetExtension(fileName);
+            if (fileExt != ".xlsx" && fileExt != ".xls")
+            {
+                return DataResult.ResultError("File not supported", "Error");
+            }
+
+            string filePath = Path.GetRandomFileName() + fileExt;
+            using (FileStream stream = File.Create(filePath))
+            {
+                await file.CopyToAsync(stream);
+                stream.Close();
+            }
+
+            var package = new ExcelPackage(new FileInfo(filePath));
+            var worksheet = package.Workbook.Worksheets.First();
+            int rowCount = worksheet.Dimension.End.Row;
+            const int QUESTION_NUMBERSTT_INDEX = 1;
+            const int QUESTION_CONTENT_INDEX = 2;
+            const int QUESTION_PARTID_INDEX = 3;
+            const int QUESTION_TYPE_INDEX = 4;
+            const int QUESTION_IMAGEURL_INDEX = 5;
+            const int QUESTION_AUDIOURL_INDEX = 6;
+            const int QUESTION_TRANSCRIPTION_INDEX = 7;
+            const int ANSWERS_CONTENT1_INDEX = 8;
+            const int ANSWERS_ISBOOLEAN1_INDEX = 9;
+            const int ANSWERS_CONTENT2_INDEX = 10;
+            const int ANSWERS_ISBOOLEAN2_INDEX = 11;
+            const int ANSWERS_CONTENT3_INDEX = 12;
+            const int ANSWERS_ISBOOLEAN3_INDEX = 13;
+            const int ANSWERS_CONTENT4_INDEX = 14;
+            const int ANSWERS_ISBOOLEAN4_INDEX = 15;
+
+            var questions = new List<CreateQuestionSingleDto>();
+
+            for (var row = 2; row <= rowCount; row++)
+            {
+                object partIdValue = worksheet.Cells[row, QUESTION_PARTID_INDEX].Value;
+                int? partIdInt = partIdValue != null ? Convert.ToInt32(partIdValue) : (int?)null;
+                Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC? PartId = partIdInt.HasValue
+                    ? (Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC?)Enum.Parse(typeof(Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC), partIdInt.Value.ToString())
+                    : (Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC?)null;
+                string TypeString = worksheet.Cells[row, QUESTION_TYPE_INDEX].Text.Trim();
+                List<int> TypeList = TypeString.Split(',')
+                    .Select(s => int.Parse(s.Trim()))
+                    .ToList();
+                var content = worksheet.Cells[row, QUESTION_CONTENT_INDEX].Text.Trim();
+
+                if (!PartId.HasValue || string.IsNullOrWhiteSpace(TypeString))
+                {
+                    continue;
+                }
+                bool questionExists = await context.QuestionToeics.AnyAsync(q => q.Content == content && q.PartId == PartId);
+                if (questionExists)
+                {
+                    continue;
+                }
+
+                var question = new QuestionToeic
+                {
+                    NumberSTT = Convert.ToInt32(worksheet.Cells[row, QUESTION_NUMBERSTT_INDEX].Value),
+                    Content = content,
+                    PartId = (Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC?)Enum.Parse(
+                        typeof(Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC),
+                        worksheet.Cells[row, QUESTION_PARTID_INDEX].Value.ToString()),
+                    Type = TypeList,
+                    ImageUrl = !string.IsNullOrWhiteSpace(worksheet.Cells[row, QUESTION_IMAGEURL_INDEX].Text?.Trim()) 
+                        ? new[] { worksheet.Cells[row, QUESTION_IMAGEURL_INDEX].Text.Trim() } 
+                        : null,
+                    AudioUrl = !string.IsNullOrWhiteSpace(worksheet.Cells[row, QUESTION_AUDIOURL_INDEX].Text?.Trim()) 
+                        ? worksheet.Cells[row, QUESTION_AUDIOURL_INDEX].Text.Trim() 
+                        : null,
+                    Transcription = worksheet.Cells[row, QUESTION_TRANSCRIPTION_INDEX].Text.Trim(),
+                    CreationTime = DateTime.Now
+                };
+
+                await context.QuestionToeics.AddAsync(question);
+                await context.SaveChangesAsync();
+
+                for (int i = 0; i < 4; i++)
+                {
+                    var answerContentIndex = ANSWERS_CONTENT1_INDEX + i * 2;
+                    var answerIsBooleanIndex = ANSWERS_ISBOOLEAN1_INDEX + i * 2;
+
+                    var answerContent = worksheet.Cells[row, answerContentIndex].Text.Trim();
+                    var answerIsBoolean = worksheet.Cells[row, answerIsBooleanIndex].Value;
+
+                    if (!string.IsNullOrWhiteSpace(answerContent) || answerIsBoolean != null)
+                    {
+                        var answer = new AnswerToeic
+                        {
+                            Content = answerContent,
+                            IsBoolean = answerIsBoolean != null && Convert.ToBoolean(answerIsBoolean),
+                            IdQuestion = question.Id,
+                        };
+                        await context.AnswerToeics.AddAsync(answer);
+                    }
+                }
+
+                await context.SaveChangesAsync();
+            }
+
+            return DataResult.ResultSuccess("Tạo câu hỏi đơn thành công");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public async Task<object> GetQuestionUser(GetQuestionUserDto parameters)
