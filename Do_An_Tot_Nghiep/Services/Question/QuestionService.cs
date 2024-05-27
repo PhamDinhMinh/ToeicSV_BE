@@ -305,6 +305,7 @@ public class QuestionService : IQuestionService
 
                 await context.SaveChangesAsync();
             }
+            File.Delete(filePath);
 
             return DataResult.ResultSuccess("Tạo câu hỏi đơn thành công");
         }
