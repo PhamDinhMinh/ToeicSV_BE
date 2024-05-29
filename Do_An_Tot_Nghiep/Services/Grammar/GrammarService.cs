@@ -28,7 +28,7 @@ public class GrammarService : IGrammarService
 
         if (!string.IsNullOrEmpty(parameters.Keyword))
         {
-            query = query.Where(x => x.Title.Contains(parameters.Keyword));
+            query = query.Where(x => x.Title.ToLower().Contains(parameters.Keyword.ToLower()));
         }
         query = query.OrderByDescending(x => x.CreationTime);
         var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();

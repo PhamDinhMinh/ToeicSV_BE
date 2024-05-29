@@ -58,6 +58,7 @@ public class AuthService : IAuthService
             inputHashPass = input;
             inputHashPass.Password = await HashPassword(input.Password);
             var newRegisterUser = _mapper.Map<Models.User>(inputHashPass);
+            newRegisterUser.CreationTime = DateTime.Now;
             context.Users.Add(newRegisterUser);
             await context.SaveChangesAsync();
             return newRegisterUser;

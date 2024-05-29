@@ -74,4 +74,13 @@ public class UserController : Controller
 
         return Ok(result);
     }
+    
+    [Authorize("Admin")]
+    [HttpGet("GetAllUser")]
+    public async Task<Object> GetAllUser([FromQuery] GetUserDto parameters)
+    {
+        var result =  await _userService.GetAllUser(parameters);
+
+        return Ok(result);
+    }
 }

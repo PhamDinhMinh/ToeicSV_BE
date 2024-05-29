@@ -29,7 +29,20 @@ public class UserService : IUserService
 
     public async Task<object> GetUserById(int id)
     {
-        return true;
+        try
+        {
+            var user = await context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return DataResult.ResultFail("Người dùng không tồn tại", (int)HttpStatusCode.Unauthorized);
+            }
+            return DataResult.ResultSuccess(user, "Thành công");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     public async Task<object> Update(UserUpdateDto input)
@@ -162,6 +175,28 @@ public class UserService : IUserService
             }
 
             return DataResult.ResultFail("Bạn không có quyền thực hiện thao tác này", (int)HttpStatusCode.Forbidden);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<object> GetAllUser(GetUserDto parameters)
+    {
+        try
+        {
+            var query = context.Users
+                .Where(u => u.Role == "User").AsQueryable();
+            
+            if (!string.IsNullOrEmpty(parameters.Keyword))
+            {
+                query = query.Where(x => x.Name.ToLower().Contains(parameters.Keyword.ToLower()));
+            };
+            query = query.OrderByDescending(x => x.CreationTime);
+            var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
+            return DataResult.ResultSuccess(result, "Thành công", result.Count());
         }
         catch (Exception e)
         {

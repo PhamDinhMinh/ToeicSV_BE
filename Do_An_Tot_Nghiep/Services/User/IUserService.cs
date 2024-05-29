@@ -10,4 +10,5 @@ public interface IUserService
     Task<object> UpdateCoverAvatar(CoverAvatarUpdateDto avatarUrl);
     Task<object> ChangePassword(UserChangePasswordDto userChangePassword);
     Task<object> Delete(int id);
+    Task<object> GetAllUser(GetUserDto parameters);
 }
