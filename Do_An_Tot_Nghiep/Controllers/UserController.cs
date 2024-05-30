@@ -33,6 +33,15 @@ public class UserController : Controller
         var result =  await _userService.Update(input);
 
         return Ok(result);
+    }  
+    
+    [Authorize("Admin")]
+    [HttpPut("UpdateForAdmin")]
+    public async Task<IActionResult> UpdateForAdmin([FromBody] UserUpdateForAdminDto input)
+    {
+        var result =  await _userService.UpdateForAdmin(input);
+
+        return Ok(result);
     }
     
     [Authorize]

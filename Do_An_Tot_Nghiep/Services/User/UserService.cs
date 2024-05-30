@@ -60,6 +60,45 @@ public class UserService : IUserService
             {
                 return DataResult.ResultFail("Không tìm thấy người dùng", (int)HttpStatusCode.NotFound);
             }
+            if (!string.IsNullOrEmpty(input.EmailAddress))
+            {
+                user.EmailAddress = input.EmailAddress;
+            }
+            else
+            {
+                input.EmailAddress = user.EmailAddress;
+            }
+            _mapper.Map(input, user);
+            context.Entry(user).CurrentValues.SetValues(input);
+            await context.SaveChangesAsync();
+            return DataResult.ResultSuccess(user, "Update thành công");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<object> UpdateForAdmin(UserUpdateForAdminDto input)
+    {
+        try
+        {
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == input.Id);
+            if (user == null)
+            {
+                return DataResult.ResultFail("Không tìm thấy người dùng", (int)HttpStatusCode.NotFound);
+            }
+            if (!string.IsNullOrEmpty(input.EmailAddress))
+            {
+                user.EmailAddress = input.EmailAddress;
+            }
+            else
+            {
+                input.EmailAddress = user.EmailAddress;
+            }
+            _mapper.Map(input, user);
+
             context.Entry(user).CurrentValues.SetValues(input);
             await context.SaveChangesAsync();
             return DataResult.ResultSuccess(user, "Update thành công");

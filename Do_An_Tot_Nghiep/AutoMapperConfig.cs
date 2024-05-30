@@ -30,6 +30,17 @@ public class AutoMapperProfile : Profile
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.PhoneNumber)))
             .ForMember(dest => dest.DateOfBirth,
                 opt => opt.Condition((src, dest, srcMember) => IsNotNullOrDefault(srcMember)));
+        CreateMap<UserUpdateForAdminDto, User>()
+            .ForMember(dest => dest.EmailAddress,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.EmailAddress)))
+            .ForMember(dest => dest.Gender, 
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.Gender)))
+            .ForMember(dest => dest.Name, 
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.Name)))
+            .ForMember(dest => dest.PhoneNumber, 
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.PhoneNumber)))
+            .ForMember(dest => dest.DateOfBirth,
+                opt => opt.Condition((src, dest, srcMember) => IsNotNullOrDefault(srcMember)));
         CreateMap<GrammarCreateDto, Grammar>().ReverseMap();
         CreateMap<GrammarUpdateWatchDto, Grammar>().ReverseMap();
         CreateMap<GrammarUpdateDto, Grammar>()
