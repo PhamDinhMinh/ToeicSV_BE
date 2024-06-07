@@ -27,4 +27,31 @@ public class ExamToeicController : Controller
 
         return Ok(result);
     }
+    
+    [Authorize()]
+    [HttpGet("GetAll")]
+    public async Task<IActionResult> GetAll([FromQuery] GetAllDto input)
+    {
+        var result =  await _examToeicService.GetAll(input);
+
+        return Ok(result);
+    }
+    
+    [Authorize("Admin")]
+    [HttpPost("CreateRandom")]
+    public async Task<IActionResult> CreateRandom([FromBody] ExamCreateDto input)
+    {
+        var result =  await _examToeicService.CreateRandom(input);
+
+        return Ok(result);
+    }
+    
+    [Authorize("Admin")]
+    [HttpDelete("Delete")]
+    public async Task<IActionResult> Delete([FromQuery] int id)
+    {
+        var result =  await _examToeicService.Delete(id);
+
+        return Ok(result);
+    }
 }
