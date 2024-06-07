@@ -8,6 +8,8 @@ public class GetListQuestionGroupDto
     public PART_TOEIC? PartId { get; set; }
     public int? Type { get; set; }
     public string? Keyword { get; set; }
+    public bool? OrderBy { get; set; }
+
     [Range(0, 2147483647)] public int SkipCount { get; set; } = 0;
     [Range(1, 2147483647)] public int MaxResultCount { get; set; } = 1000;
 }

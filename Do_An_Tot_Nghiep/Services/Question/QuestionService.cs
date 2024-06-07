@@ -54,6 +54,7 @@ public class QuestionService : IQuestionService
     public async Task<object> CreateQuestionGroup(CreateQuestionGroupDto parameters)
     {
         var groupQuestion = _mapper.Map<GroupQuestion>(parameters);
+        groupQuestion.CreationTime = DateTime.Now;
         await context.GroupQuestions.AddAsync(groupQuestion);
         await context.SaveChangesAsync();
 
@@ -120,7 +121,10 @@ public class QuestionService : IQuestionService
                     }).ToList()
                 };
             query = query.Where(x => x.IdGroupQuestion == null);
-            query = query.OrderByDescending(x => x.CreationTime);
+            if (parameters.OrderBy.HasValue && parameters.OrderBy.Value)
+            {
+                query = query.OrderByDescending(x => x.CreationTime);
+            }
             if (parameters.Type.HasValue)
             {
                 query = query.Where(x => x.Type.Contains(parameters.Type.Value));
@@ -162,6 +166,7 @@ public class QuestionService : IQuestionService
                     ImageUrl = groupQuestion.ImageUrl,
                     AudioUrl = groupQuestion.AudioUrl,
                     IdExam = groupQuestion.IdExam,
+                    CreationTime = groupQuestion.CreationTime,
                     Questions = manyQuestion.Select(q => new
                     {
                         Id = q.Id,
@@ -176,10 +181,15 @@ public class QuestionService : IQuestionService
             {
                 query = query.Where(x => x.PartId == parameters.PartId);
             }
-
+            
             if (!string.IsNullOrEmpty(parameters.Keyword))
             {
                 query = query.Where(x => x.Content.Contains(parameters.Keyword));
+            }
+            if (parameters.OrderBy.HasValue && parameters.OrderBy.Value)
+            {
+                query = query.OrderByDescending(x => x.CreationTime != null)
+                    .ThenByDescending(x => x.CreationTime);
             }
 
             var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
@@ -369,11 +379,6 @@ public class QuestionService : IQuestionService
                 parameters.PartId == PART_TOEIC.Part6)
             {
                 var queryGroup = from groupQ in context.GroupQuestions
-                    join questions in context.QuestionToeics on groupQ.Id equals questions.IdGroupQuestion into
-                        questionOnGroup
-                    from qg in questionOnGroup.DefaultIfEmpty()
-                    join answers in context.AnswerToeics on qg.Id equals answers.IdQuestion into answerOnQuestion
-                    from aq in answerOnQuestion.DefaultIfEmpty()
                     select new
                     {
                         Id = groupQ.Id,
@@ -419,7 +424,7 @@ public class QuestionService : IQuestionService
 
                 if (parameters.PartId == PART_TOEIC.Part6)
                 {
-                    var result = queryGroup.Take(parameters.MaxResultCount / 4).ToList();
+                    var result = queryGroup.Skip(parameters.SkipCount).Take(parameters.MaxResultCount / 4).ToList();
                     return DataResult.ResultSuccess(result, "", result.Count);
                 }
             }
@@ -465,11 +470,11 @@ public class QuestionService : IQuestionService
 
                 // Phân loại nhóm câu hỏi theo số lượng câu hỏi
                 var groupsWith2Questions = queryGroup.Where(g => g.Questions.Count == 2).OrderBy(x => Guid.NewGuid())
-                    .Take(3).ToList();
+                    .Take(4).ToList();
                 var groupsWith3Questions = queryGroup.Where(g => g.Questions.Count == 3).OrderBy(x => Guid.NewGuid())
-                    .Take(5).ToList();
+                    .Take(3).ToList();
                 var groupsWith4Questions = queryGroup.Where(g => g.Questions.Count == 4).OrderBy(x => Guid.NewGuid())
-                    .Take(2).ToList();
+                    .Take(3).ToList();
                 var groupsWith5Questions = queryGroup.Where(g => g.Questions.Count == 5).OrderBy(x => Guid.NewGuid())
                     .Take(5).ToList();
 

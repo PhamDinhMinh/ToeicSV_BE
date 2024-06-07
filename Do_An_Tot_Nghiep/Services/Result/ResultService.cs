@@ -26,8 +26,8 @@ public class ResultService : IResultService
     {
         try
         {
-            var submittedQuestionIds = input.resultOfUser.Select(s => s.IdQuestion).ToList();
-            var submittedAnswerIds = input.resultOfUser.Select(s => s.IdAnswer).ToList();
+            var submittedQuestionIds = input.ResultOfUser.Select(s => s.IdQuestion).ToList();
+            var submittedAnswerIds = input.ResultOfUser.Select(s => s.IdAnswer).ToList();
             int listeningCorrect = 0;
             int readingCorrect = 0;
             int listeningWrong = 0;
@@ -90,7 +90,6 @@ public class ResultService : IResultService
             var jsonResult = JsonConvert.SerializeObject(results);
             var resultEntry = new Models.Result()
             {
-                
                 Data = jsonResult,
                 UserId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")),
                 TimeStart = input.TimeStart,
