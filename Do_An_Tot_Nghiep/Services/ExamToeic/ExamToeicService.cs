@@ -161,6 +161,20 @@ public class ExamToeicService : IExamToeicService
         }
     }
 
+    public async Task<object> Update(ExamUpdateDto input)
+    {
+        var examToeicOld = await context.ExamToeics.FindAsync(input.Id);
+        if (examToeicOld == null)
+        {
+            return DataResult.ResultFail($"Grammar with ID {input.Id} not found.");
+        }
+
+        _mapper.Map(input, examToeicOld);
+        context.ExamToeics.Update(examToeicOld);
+        await context.SaveChangesAsync();
+        return DataResult.ResultSuccess(examToeicOld, "Update thành công");
+    }
+
     public async Task<object> Delete(int id)
     {
         try

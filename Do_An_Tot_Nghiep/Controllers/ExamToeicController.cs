@@ -47,6 +47,15 @@ public class ExamToeicController : Controller
     }
     
     [Authorize("Admin")]
+    [HttpPut("Update")]
+    public async Task<IActionResult> Update([FromBody] ExamUpdateDto input)
+    {
+        var result =  await _examToeicService.Update(input);
+
+        return Ok(result);
+    }
+    
+    [Authorize("Admin")]
     [HttpDelete("Delete")]
     public async Task<IActionResult> Delete([FromQuery] int id)
     {

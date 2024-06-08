@@ -13,6 +13,7 @@ using Do_An_Tot_Nghiep.Dto.User;
 using Do_An_Tot_Nghiep.Enums.ExamTips;
 using Do_An_Tot_Nghiep.Enums.Grammar;
 using Do_An_Tot_Nghiep.Models;
+using OfficeOpenXml.FormulaParsing.Ranges;
 
 public class AutoMapperProfile : Profile
 {
@@ -20,24 +21,24 @@ public class AutoMapperProfile : Profile
     {
         CreateMap<UserRegisterDto, User>().ReverseMap();
         CreateMap<UserUpdateDto, User>()
-            .ForMember(dest => dest.EmailAddress, 
+            .ForMember(dest => dest.EmailAddress,
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.EmailAddress)))
-            .ForMember(dest => dest.Gender, 
+            .ForMember(dest => dest.Gender,
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.Gender)))
-            .ForMember(dest => dest.Name, 
+            .ForMember(dest => dest.Name,
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.Name)))
-            .ForMember(dest => dest.PhoneNumber, 
+            .ForMember(dest => dest.PhoneNumber,
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.PhoneNumber)))
             .ForMember(dest => dest.DateOfBirth,
                 opt => opt.Condition((src, dest, srcMember) => IsNotNullOrDefault(srcMember)));
         CreateMap<UserUpdateForAdminDto, User>()
             .ForMember(dest => dest.EmailAddress,
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.EmailAddress)))
-            .ForMember(dest => dest.Gender, 
+            .ForMember(dest => dest.Gender,
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.Gender)))
-            .ForMember(dest => dest.Name, 
+            .ForMember(dest => dest.Name,
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.Name)))
-            .ForMember(dest => dest.PhoneNumber, 
+            .ForMember(dest => dest.PhoneNumber,
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.PhoneNumber)))
             .ForMember(dest => dest.DateOfBirth,
                 opt => opt.Condition((src, dest, srcMember) => IsNotNullOrDefault(srcMember)));
@@ -53,7 +54,8 @@ public class AutoMapperProfile : Profile
         CreateMap<ExamTipsCreateDto, ExamTip>().ReverseMap();
         CreateMap<ExamTipsUpdateDto, ExamTip>()
             .ForMember(dest => dest.Description,
-                opt => opt.MapFrom(src => src.Description != null && src.Description.Length > 0 ? src.Description : null))
+                opt => opt.MapFrom(
+                    src => src.Description != null && src.Description.Length > 0 ? src.Description : null))
             .ForMember(dest => dest.Title,
                 opt => opt.Condition(src => !string.IsNullOrEmpty(src.Title)))
             .ForMember(dest => dest.Type,
@@ -71,7 +73,7 @@ public class AutoMapperProfile : Profile
             .ForMember(dest => dest.ImageUrls,
                 opt => opt.Condition(src => src.ImageUrls != null && src.ImageUrls.Any()));
         CreateMap<CreatePostCommentDto, PostComment>().ReverseMap();
-        
+
         CreateMap<CreatePostReactDto, PostReact>().ReverseMap();
 
         CreateMap<CreateQuestionSingleDto, QuestionToeic>().ReverseMap();
@@ -82,9 +84,25 @@ public class AutoMapperProfile : Profile
         CreateMap<CreateQuestionGroupDto, AnswerToeic>().ReverseMap();
 
         CreateMap<ExamCreateDto, ExamToeic>().ReverseMap();
-
-
+        CreateMap<ExamUpdateDto, ExamToeic>()
+            .ForMember(dest => dest.NameExam,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.NameExam)))
+            .ForMember(dest => dest.ListQuestionPart1,
+                opt => opt.Condition(src => src.ListQuestionPart1 != null && src.ListQuestionPart1.Count > 0))
+            .ForMember(dest => dest.ListQuestionPart2,
+                opt => opt.Condition(src => src.ListQuestionPart2 != null && src.ListQuestionPart2.Count > 0))
+            .ForMember(dest => dest.ListQuestionPart3,
+                opt => opt.Condition(src => src.ListQuestionPart3 != null && src.ListQuestionPart3.Count > 0))
+            .ForMember(dest => dest.ListQuestionPart4,
+                opt => opt.Condition(src => src.ListQuestionPart4 != null && src.ListQuestionPart4.Count > 0))
+            .ForMember(dest => dest.ListQuestionPart5,
+                opt => opt.Condition(src => src.ListQuestionPart5 != null && src.ListQuestionPart5.Count > 0))
+            .ForMember(dest => dest.ListQuestionPart6,
+                opt => opt.Condition(src => src.ListQuestionPart6 != null && src.ListQuestionPart6.Count > 0))
+            .ForMember(dest => dest.ListQuestionPart7,
+                opt => opt.Condition(src => src.ListQuestionPart7 != null && src.ListQuestionPart7.Count > 0));
     }
+
     #region method helpers
 
     private static bool IsNotNullOrDefault<T>(T srcMember)
