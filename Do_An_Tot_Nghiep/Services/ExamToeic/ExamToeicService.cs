@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.ExamToeic;
+using Do_An_Tot_Nghiep.Dto.Question;
 using Do_An_Tot_Nghiep.Enums.Question;
+using Do_An_Tot_Nghiep.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using NewProject.Services.Common;
@@ -118,7 +120,7 @@ public class ExamToeicService : IExamToeicService
                 .Take(5)
                 .Select(g => g.Id)
                 .ToList();
-            
+
             newExamToeic.ListQuestionPart7 = newExamToeic.ListQuestionPart7 = groupsWith2Questions
                 .Concat(groupsWith3Questions)
                 .Concat(groupsWith4Questions)
@@ -159,6 +161,107 @@ public class ExamToeicService : IExamToeicService
             Console.WriteLine(e);
             throw;
         }
+    }
+
+    public async Task<object> GetById(int id)
+    {
+        var exam = await (from examT in context.ExamToeics
+            join user in context.Users
+                on examT.CreatorId equals user.Id
+            where examT.Id == id
+            select new
+            {
+                Exam = examT,
+                CreatorName = user.Name
+            }).FirstOrDefaultAsync();
+
+        if (exam == null)
+        {
+            return DataResult.ResultFail($"Grammar with ID {id} not found.");
+        }
+
+        var examDetails = new
+        {
+            Id = exam.Exam.Id,
+            NameExam = exam.Exam.NameExam,
+            CreationTime = exam.Exam.CreationTime,
+            CreatorName = exam.CreatorName,
+            Part1 = await GetQuestionsSingle(exam.Exam.ListQuestionPart1),
+            Part2 = await GetQuestionsSingle(exam.Exam.ListQuestionPart2),
+            Part3 = await GetQuestionOnGroup(exam.Exam.ListQuestionPart3),
+            Part4 = await GetQuestionOnGroup(exam.Exam.ListQuestionPart4),
+            Part5 = await GetQuestionsSingle(exam.Exam.ListQuestionPart5),
+            Part6 = await GetQuestionOnGroup(exam.Exam.ListQuestionPart6),
+            Part7 = await GetQuestionOnGroup(exam.Exam.ListQuestionPart7)
+        };
+        return DataResult.ResultSuccess(examDetails, "");
+    }
+
+    private async Task<List<object>> GetQuestionsSingle(List<int>? questionIds)
+    {
+        if (questionIds == null || !questionIds.Any())
+            return new List<object>();
+
+        var queryQuestion = from question in context.QuestionToeics
+            where questionIds.Contains(question.Id)
+            join answers in context.AnswerToeics on question.Id equals answers.IdQuestion into answersGroup
+            select new
+            {
+                Id = question.Id,
+                Content = question.Content,
+                PartId = question.PartId,
+                ImageUrl = question.ImageUrl,
+                AudioUrl = question.AudioUrl,
+                NumberSTT = question.NumberSTT,
+                Type = question.Type,
+                IdGroupQuestion = question.IdGroupQuestion,
+                Transcription = question.Transcription,
+                Answers = answersGroup.Select(a => new
+                {
+                    Id = a.Id,
+                    Content = a.Content,
+                    IsBoolean = a.IsBoolean,
+                    Transcription = a.Transcription
+                }).ToList(),
+            };
+
+        var result = await queryQuestion.ToListAsync();
+        return result.Cast<object>().ToList();
+    }
+
+    private async Task<List<object>> GetQuestionOnGroup(List<int>? questionIds)
+    {
+        if (questionIds == null || !questionIds.Any())
+            return new List<object>();
+
+        var queryQuestion = from groupQ in context.GroupQuestions
+            select new
+            {
+                Id = groupQ.Id,
+                AudioUrl = groupQ.AudioUrl,
+                ImageUrl = groupQ.ImageUrl,
+                Content = groupQ.Content,
+                PartId = groupQ.PartId,
+                Transcription = groupQ.Transcription,
+                Questions = context.QuestionToeics.Where(q => q.IdGroupQuestion == groupQ.Id).Select(q => new
+                {
+                    Id = q.Id,
+                    Content = q.Content,
+                    NumberSTT = q.NumberSTT,
+                    Type = q.Type,
+                    Transcription = q.Transcription,
+                    Answers = context.AnswerToeics.Where(a => a.IdQuestion == q.Id).Select(a => new
+                    {
+                        Id = a.Id,
+                        Content = a.Content,
+                        IsBoolean = a.IsBoolean,
+                        Transcription = a.Transcription
+                    }).ToList()
+                }).ToList()
+            };
+
+        var result = await queryQuestion.ToListAsync();
+        return result.Cast<object>().ToList();
     }
 
     public async Task<object> Update(ExamUpdateDto input)

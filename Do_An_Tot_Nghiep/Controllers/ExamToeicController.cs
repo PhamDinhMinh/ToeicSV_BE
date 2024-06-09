@@ -37,6 +37,15 @@ public class ExamToeicController : Controller
         return Ok(result);
     }
     
+    [Authorize()]
+    [HttpGet("GetById")]
+    public async Task<IActionResult> GetById([FromQuery] int id)
+    {
+        var result =  await _examToeicService.GetById(id);
+
+        return Ok(result);
+    }
+    
     [Authorize("Admin")]
     [HttpPost("CreateRandom")]
     public async Task<IActionResult> CreateRandom([FromBody] ExamCreateDto input)
