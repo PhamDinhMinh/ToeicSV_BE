@@ -62,16 +62,22 @@ public class ExamToeicService : IExamToeicService
                 .Take(25)
                 .Select(q => q.Id)
                 .ToList();
-            newExamToeic.ListQuestionPart3 = context.GroupQuestions
+            var randomPart3 = await context.GroupQuestions
                 .Where(q => q.PartId == PART_TOEIC.Part3)
                 .OrderBy(q => Guid.NewGuid())
                 .Take(13)
+                .ToListAsync();
+            newExamToeic.ListQuestionPart3 = randomPart3
+                .OrderBy(q => q.ImageUrl != null && q.ImageUrl.Length > 0)
                 .Select(q => q.Id)
                 .ToList();
-            newExamToeic.ListQuestionPart4 = context.GroupQuestions
+            var randomPart4 = await context.GroupQuestions
                 .Where(q => q.PartId == PART_TOEIC.Part4)
                 .OrderBy(q => Guid.NewGuid())
                 .Take(10)
+                .ToListAsync();
+            newExamToeic.ListQuestionPart4 = randomPart4
+                .OrderBy(q => q.ImageUrl != null && q.ImageUrl.Length > 0)
                 .Select(q => q.Id)
                 .ToList();
             newExamToeic.ListQuestionPart5 = context.QuestionToeics
@@ -226,7 +232,8 @@ public class ExamToeicService : IExamToeicService
             };
 
         var result = await queryQuestion.ToListAsync();
-        return result.Cast<object>().ToList();
+        var orderedResults = result.OrderBy(q => questionIds.IndexOf(q.Id)).ToList();
+        return orderedResults.Cast<object>().ToList();
     }
 
     private async Task<List<object>> GetQuestionOnGroup(List<int>? questionIds)
@@ -235,6 +242,7 @@ public class ExamToeicService : IExamToeicService
             return new List<object>();
 
         var queryQuestion = from groupQ in context.GroupQuestions
+            where questionIds.Contains(groupQ.Id)
             select new
             {
                 Id = groupQ.Id,
@@ -261,7 +269,8 @@ public class ExamToeicService : IExamToeicService
             };
 
         var result = await queryQuestion.ToListAsync();
-        return result.Cast<object>().ToList();
+        var orderedResults = result.OrderBy(q => questionIds.IndexOf(q.Id)).ToList();
+        return orderedResults.Cast<object>().ToList();
     }
 
     public async Task<object> Update(ExamUpdateDto input)
