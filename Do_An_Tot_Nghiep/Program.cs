@@ -41,6 +41,7 @@ builder.Services.AddScoped<IUploadService, UploadService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<IExamToeicService, ExamToeicService>();
 builder.Services.AddScoped<IResultService, ResultService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddSingleton(sp => {

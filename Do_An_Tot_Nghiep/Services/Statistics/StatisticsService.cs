@@ -1,0 +1,156 @@
+using System.Globalization;
+using Do_An_Tot_Nghiep.Dto.Result;
+using Do_An_Tot_Nghiep.Enums.Question;
+using Microsoft.EntityFrameworkCore;
+using NewProject.Services.Common;
+using Newtonsoft.Json;
+
+namespace Do_An_Tot_Nghiep.Services.Upload;
+
+public class StatisticsService : IStatisticsService
+{
+    private readonly IDbServices _dbService;
+    private PublicContext context = new PublicContext();
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public StatisticsService(IDbServices dbService, IHttpContextAccessor httpContextAccessor)
+    {
+        _dbService = dbService;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private static readonly string[] VietnameseMonths = new string[]
+    {
+        "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+        "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+    };
+
+    public async Task<object> StatisticsUser(int NumberRange)
+    {
+        return await GatherStatistics(context.Users, NumberRange);
+    }
+
+    public async Task<object> StatisticsPost(int NumberRange)
+    {
+        return await GatherStatistics(context.Posts, NumberRange);
+    }
+
+    public async Task<object> StatisticsQuestion(int NumberRange)
+    {
+        return await GatherStatistics(context.QuestionToeics, NumberRange);
+    }
+    
+    public async Task<object> StatisticsCorrectQuestion()
+    {
+        try
+        {
+            var results = await context.Results.ToListAsync();
+            int totalQuestions = 0;
+            int correctQuestion = 0;
+            int correctListening = 0;
+            int corectReading = 0;
+            
+            foreach (var result in results)
+            {
+                if (!string.IsNullOrEmpty(result.Data))
+                {
+                    try
+                    {
+                        var resultData = JsonConvert.DeserializeObject<List<DataResultDto>>(result.Data);
+                        if (resultData != null)
+                        {
+                            foreach (var question in resultData)
+                            {
+                                totalQuestions++;
+                                if (question.PartId < (PART_TOEIC?)5)
+                                {
+                                    if (question.Answer.IsBoolean)
+                                    {
+                                        correctQuestion++;
+                                        correctListening++;
+                                    }
+                                }
+                                else
+                                {
+                                    if (question.Answer.IsBoolean)
+                                    {
+                                        correctQuestion++;
+                                        corectReading++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                }
+            }
+            return new
+            {
+                TotalQuestions = totalQuestions,
+                CorrectAnswers = correctQuestion,
+                CorrectListening = correctListening,
+                CorrectReading = corectReading
+            };
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    private async Task<object> GatherStatistics<T>(DbSet<T> dataSet, int numberRange) where T : class
+    {
+        try
+        {
+            DateTime now = DateTime.Now;
+            int currentMonth = now.Month;
+            int currentYear = now.Year;
+
+            Dictionary<string, int> dataResult = new Dictionary<string, int>();
+
+            if (currentMonth >= numberRange)
+            {
+                for (int index = currentMonth - numberRange + 1; index <= currentMonth; index++)
+                {
+                    int count = await dataSet
+                        .CountAsync(x => EF.Property<DateTime?>(x, "CreationTime") != null &&
+                                         EF.Property<DateTime?>(x, "CreationTime").Value.Month == index &&
+                                         EF.Property<DateTime?>(x, "CreationTime").Value.Year == currentYear);
+                    dataResult.Add(VietnameseMonths[index - 1], count);
+                }
+            }
+            else
+            {
+                for (int index = 12 - (numberRange - currentMonth) + 1; index <= 12; index++)
+                {
+                    int count = await dataSet
+                        .CountAsync(x => EF.Property<DateTime?>(x, "CreationTime") != null &&
+                                         EF.Property<DateTime?>(x, "CreationTime").Value.Month == index &&
+                                         EF.Property<DateTime?>(x, "CreationTime").Value.Year == currentYear - 1);
+                    dataResult.Add(VietnameseMonths[index - 1], count);
+                }
+
+                for (int index = 1; index <= currentMonth; index++)
+                {
+                    int count = await dataSet
+                        .CountAsync(x => EF.Property<DateTime?>(x, "CreationTime") != null &&
+                                         EF.Property<DateTime?>(x, "CreationTime").Value.Month == index &&
+                                         EF.Property<DateTime?>(x, "CreationTime").Value.Year == currentYear);
+                    dataResult.Add(VietnameseMonths[index - 1], count);
+                }
+            }
+
+            return DataResult.ResultSuccess(dataResult, "Thành công!");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+}
