@@ -88,13 +88,14 @@ public class StatisticsService : IStatisticsService
                     }
                 }
             }
-            return new
+            var dataReturn =  new
             {
                 TotalQuestions = totalQuestions,
                 CorrectAnswers = correctQuestion,
                 CorrectListening = correctListening,
                 CorrectReading = corectReading
             };
+            return DataResult.ResultSuccess(dataReturn, "Thành công!");
         }
         catch (Exception e)
         {
