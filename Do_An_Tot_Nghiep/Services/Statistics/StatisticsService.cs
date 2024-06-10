@@ -47,8 +47,8 @@ public class StatisticsService : IStatisticsService
             var results = await context.Results.ToListAsync();
             int totalQuestions = 0;
             int correctQuestion = 0;
-            int correctListening = 0;
-            int corectReading = 0;
+            int questionListening = 0;
+            int questionReading = 0;
             
             foreach (var result in results)
             {
@@ -64,18 +64,18 @@ public class StatisticsService : IStatisticsService
                                 totalQuestions++;
                                 if (question.PartId < (PART_TOEIC?)5)
                                 {
+                                    questionListening++;
                                     if (question.Answer.IsBoolean)
                                     {
                                         correctQuestion++;
-                                        correctListening++;
                                     }
                                 }
                                 else
                                 {
+                                    questionReading++;
                                     if (question.Answer.IsBoolean)
                                     {
                                         correctQuestion++;
-                                        corectReading++;
                                     }
                                 }
                             }
@@ -92,8 +92,8 @@ public class StatisticsService : IStatisticsService
             {
                 TotalQuestions = totalQuestions,
                 CorrectAnswers = correctQuestion,
-                CorrectListening = correctListening,
-                CorrectReading = corectReading
+                QuestionListening = questionListening,
+                QuestionReading = questionReading
             };
             return DataResult.ResultSuccess(dataReturn, "Thành công!");
         }
