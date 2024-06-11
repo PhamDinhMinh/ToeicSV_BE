@@ -98,6 +98,16 @@ public class AutoMapperProfile : Profile
         CreateMap<CreateQuestionGroupDto, GroupQuestion>().ReverseMap();
         CreateMap<CreateQuestionGroupDto, QuestionToeic>().ReverseMap();
         CreateMap<CreateQuestionGroupDto, AnswerToeic>().ReverseMap();
+        
+        CreateMap<UpdateQuestionGroupDto, GroupQuestion>()
+            .ForMember(dest => dest.Content,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.Content)))
+            .ForMember(dest => dest.AudioUrl,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.AudioUrl)))
+            .ForMember(dest => dest.Transcription,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.Transcription)))
+            .ForMember(dest => dest.ImageUrl,
+                opt => opt.Condition(src => src.ImageUrl != null && src.ImageUrl.Length > 0));
 
         CreateMap<ExamCreateDto, ExamToeic>().ReverseMap();
         CreateMap<ExamUpdateDto, ExamToeic>()

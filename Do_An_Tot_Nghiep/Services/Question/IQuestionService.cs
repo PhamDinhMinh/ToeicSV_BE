@@ -12,7 +12,8 @@ public interface IQuestionService
     Task<object> ImportExcelQuestionSingle(ImportExcelDto input);
     Task<object> UpdateQuestionSingle(UpdateQuestionSingleDto input);
     Task<object> DeleteQuestionSingle(int id);
-
+    Task<object> UpdateQuestionGroup(UpdateQuestionGroupDto input);
+    Task<object> DeleteQuestionGroup(int id);
     // User
     Task<object> GetQuestionUser(GetQuestionUserDto parameters);
 }

@@ -350,10 +350,10 @@ public class QuestionService : IQuestionService
                 context.QuestionToeics.Update(question);
                 foreach (var answerDto in input.Answers)
                 {
-                    var answers = await context.AnswerToeics.FindAsync(answerDto.Id);
-                    answers.IsBoolean = answerDto.IsBoolean;
-                    answers.Content = answerDto.Content;
-                    context.AnswerToeics.Update(answers);
+                    var answerQ = await context.AnswerToeics.FindAsync(answerDto.Id);
+                    answerQ.IsBoolean = answerDto.IsBoolean;
+                    answerQ.Content = answerDto.Content;
+                    context.AnswerToeics.Update(answerQ);
                 }
                 await context.SaveChangesAsync();
                 transaction.Commit();
@@ -384,6 +384,94 @@ public class QuestionService : IQuestionService
                 context.AnswerToeics.RemoveRange(answers);
                 await context.SaveChangesAsync();
 
+                transaction.Commit();
+                return DataResult.ResultSuccess(true, "");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+    }
+
+    public async Task<object> UpdateQuestionGroup(UpdateQuestionGroupDto input)
+    {
+        using (var transaction = context.Database.BeginTransaction())
+        {
+            try
+            {
+                var groupQuestion = await context.GroupQuestions.FindAsync(input.Id);
+                if (groupQuestion == null)
+                {
+                    throw new Exception("Bad Request");
+                }
+                _mapper.Map(input, groupQuestion);
+                context.GroupQuestions.Update(groupQuestion);
+                foreach (var question in input.Questions)
+                {
+                    var questionDetail = await context.QuestionToeics.FindAsync(question.Id);
+                    if (!string.IsNullOrEmpty(question.Content))
+                    {
+                        questionDetail.Content = question.Content;
+                    }
+
+                    if (!string.IsNullOrEmpty(question.Transcription))
+                    {
+                        questionDetail.Transcription = question.Transcription;
+                    }
+
+                    if (question.Type.Count() > 0)
+                    {
+                        questionDetail.Type = question.Type;
+                    }
+
+                    if (question.NumberSTT.HasValue)
+                    {
+                        questionDetail.NumberSTT = question.NumberSTT;
+                    }
+                    context.QuestionToeics.Update(questionDetail);
+                    foreach (var answerDto in question.Answers)
+                    {
+                        var answerQ = await context.AnswerToeics.FindAsync(answerDto.Id);
+                        answerQ.IsBoolean = answerDto.IsBoolean;
+                        answerQ.Content = answerDto.Content;
+                        context.AnswerToeics.Update(answerQ);
+                    }
+                }
+                await context.SaveChangesAsync();
+                transaction.Commit();
+                return DataResult.ResultSuccess("Chỉnh sửa thành công");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+    }
+
+    public async Task<object> DeleteQuestionGroup(int id)
+    {
+        using (var transaction = context.Database.BeginTransaction())
+        {
+            try
+            {
+                var groupQuestion = await context.GroupQuestions.FindAsync(id);
+                if (groupQuestion == null)
+                {
+                    throw new Exception("Không tìm thấy câu hỏi");
+                }
+
+                context.GroupQuestions.Remove(groupQuestion);
+                var questions = await context.QuestionToeics.Where(q => q.IdGroupQuestion == id).ToListAsync();
+                foreach (var question in questions)
+                {
+                    var answers = await context.AnswerToeics.Where(a => a.IdQuestion == question.Id).ToListAsync();
+                    context.AnswerToeics.RemoveRange(answers);
+                }
+                context.QuestionToeics.RemoveRange(questions);
+                await context.SaveChangesAsync();
                 transaction.Commit();
                 return DataResult.ResultSuccess(true, "");
             }
