@@ -37,11 +37,20 @@ public class ExamToeicController : Controller
         return Ok(result);
     }
     
-    [Authorize()]
+    [Authorize("Admin")]
     [HttpGet("GetById")]
     public async Task<IActionResult> GetById([FromQuery] int id)
     {
         var result =  await _examToeicService.GetById(id);
+
+        return Ok(result);
+    }
+    
+    [Authorize()]
+    [HttpGet("GetByIdForUser")]
+    public async Task<IActionResult> GetByIdForUser([FromQuery] int id)
+    {
+        var result =  await _examToeicService.GetByIdForUser(id);
 
         return Ok(result);
     }

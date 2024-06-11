@@ -203,6 +203,45 @@ public class ExamToeicService : IExamToeicService
         return DataResult.ResultSuccess(examDetails, "");
     }
 
+    public async Task<object> GetByIdForUser(int id)
+    {
+        try
+        {
+            var exam = await context.ExamToeics
+                .Where(e => e.Id == id)
+                .FirstOrDefaultAsync();
+
+            if (exam == null)
+            {
+                return DataResult.ResultFail($"Exam with ID {id} not found.");
+            }
+            var questions = new List<object>();
+            questions.AddRange(await GetQuestionsSingle(exam.ListQuestionPart1));
+            questions.AddRange(await GetQuestionsSingle(exam.ListQuestionPart2));
+            questions.AddRange(await GetQuestionOnGroup(exam.ListQuestionPart3));
+            questions.AddRange(await GetQuestionOnGroup(exam.ListQuestionPart4));
+            questions.AddRange(await GetQuestionsSingle(exam.ListQuestionPart5));
+            questions.AddRange(await GetQuestionOnGroup(exam.ListQuestionPart6));
+            questions.AddRange(await GetQuestionOnGroup(exam.ListQuestionPart7));
+            
+            var examDetails = new
+            {
+                Id = exam.Id,
+                NameExam = exam.NameExam,
+                CreationTime = exam.CreationTime,
+                QuestionsOnExam = questions  // All questions combined into one property
+            };
+
+            return DataResult.ResultSuccess(examDetails, "");
+
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
     private async Task<List<object>> GetQuestionsSingle(List<int>? questionIds)
     {
         if (questionIds == null || !questionIds.Any())

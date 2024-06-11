@@ -3,6 +3,7 @@ using Do_An_Tot_Nghiep.Dto.Result;
 using System.Linq;
 using System.Security.Claims;
 using Do_An_Tot_Nghiep.Enums.Question;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 
@@ -21,7 +22,7 @@ public class ResultService : IResultService
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
     }
-    
+
     public async Task<object> Submit(SubmitQuestionDto input)
     {
         try
@@ -63,12 +64,16 @@ public class ResultService : IResultService
                         Id = selectedAnswer.Id,
                         Content = selectedAnswer.Content,
                         IsBoolean = selectedAnswer.IsBoolean, 
-                        Transcription = selectedAnswer.Transcription
+                        Transcription = selectedAnswer.Transcription,
+                        correctAnswerId = context.AnswerToeics
+                        .Where(a => a.IdQuestion == question.Id && a.IsBoolean)
+                        .Select(a => a.Id).ToList()
                     }
                 };
             var results =  query.ToList();
+            var sortedResults = results.OrderBy(r => submittedQuestionIds.IndexOf(r.Id)).ToList();
             
-            foreach (var item in results)
+            foreach (var item in sortedResults)
             {
                 if (item.PartId >= (PART_TOEIC?)1 && item.PartId <= (PART_TOEIC?)4)
                 {
@@ -87,7 +92,7 @@ public class ResultService : IResultService
                 }
             }
             
-            var jsonResult = JsonConvert.SerializeObject(results);
+            var jsonResult = JsonConvert.SerializeObject(sortedResults);
             var resultEntry = new Models.Result()
             {
                 Data = jsonResult,
@@ -108,12 +113,13 @@ public class ResultService : IResultService
                 ReadingCorrect = readingCorrect,
                 TotalCorrect = listeningCorrect + readingCorrect,
                 TotalWrong = listeningWrong + readingWrong,
-                Details = results.Select(r => new {
+                Details = sortedResults.Select(r => new {
                     r.Id,
                     r.Content,
                     r.Type,
                     r.PartId,
                     Correct = (r.Answer != null && submittedAnswerIds.Contains(r.Answer.Id) && r.Answer.IsBoolean),
+                    AnswerCorrectId = r.Answer?.correctAnswerId.First(),
                     AnswerId = r.Answer?.Id
                 }).ToList()
             };

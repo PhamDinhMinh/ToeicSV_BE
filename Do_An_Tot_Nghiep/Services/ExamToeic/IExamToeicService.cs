@@ -8,6 +8,7 @@ public interface IExamToeicService
     Task<object> CreateRandom(ExamCreateDto input);
     Task<object> GetAll(GetAllDto parameters);
     Task<object> GetById(int id);
+    Task<object> GetByIdForUser(int id);
     Task<object> Update(ExamUpdateDto input);
     Task<object> Delete(int id);
 }
