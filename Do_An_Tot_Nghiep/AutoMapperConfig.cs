@@ -12,6 +12,7 @@ using Do_An_Tot_Nghiep.Dto.Result;
 using Do_An_Tot_Nghiep.Dto.User;
 using Do_An_Tot_Nghiep.Enums.ExamTips;
 using Do_An_Tot_Nghiep.Enums.Grammar;
+using Do_An_Tot_Nghiep.Enums.Question;
 using Do_An_Tot_Nghiep.Models;
 using OfficeOpenXml.FormulaParsing.Ranges;
 
@@ -78,7 +79,22 @@ public class AutoMapperProfile : Profile
 
         CreateMap<CreateQuestionSingleDto, QuestionToeic>().ReverseMap();
         CreateMap<CreateQuestionSingleDto, AnswerToeic>().ReverseMap();
-
+        CreateMap<UpdateQuestionSingleDto, QuestionToeic>()
+            .ForMember(dest => dest.Content,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.Content)))
+            .ForMember(dest => dest.PartId,
+                opt => opt.Condition(src => src.PartId.HasValue && Enum.IsDefined(typeof(PART_TOEIC), src.PartId)))
+            .ForMember(dest => dest.AudioUrl,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.AudioUrl)))
+            .ForMember(dest => dest.Transcription,
+                opt => opt.Condition(src => !string.IsNullOrEmpty(src.Transcription)))
+            .ForMember(dest => dest.NumberSTT,
+                opt => opt.Condition(src => src.NumberSTT.HasValue))
+            .ForMember(dest => dest.Type,
+                opt => opt.Condition(src => src.Type != null && src.Type.Count > 0))
+            .ForMember(dest => dest.ImageUrl,
+                opt => opt.Condition(src => src.ImageUrl != null && src.ImageUrl.Length > 0));
+            
         CreateMap<CreateQuestionGroupDto, GroupQuestion>().ReverseMap();
         CreateMap<CreateQuestionGroupDto, QuestionToeic>().ReverseMap();
         CreateMap<CreateQuestionGroupDto, AnswerToeic>().ReverseMap();

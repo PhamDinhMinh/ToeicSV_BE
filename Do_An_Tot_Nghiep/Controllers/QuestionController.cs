@@ -56,6 +56,24 @@ public class QuestionController : Controller
     }
     
     [Authorize("Admin")]
+    [HttpPut("UpdateQuestionSingle")]
+    public async Task<IActionResult> UpdateQuestionSingle([FromBody] UpdateQuestionSingleDto parameters)
+    {
+        var result =  await _questionService.UpdateQuestionSingle(parameters);
+
+        return Ok(result);
+    }
+    
+    [Authorize("Admin")]
+    [HttpDelete("DeleteQuestionSingle")]
+    public async Task<IActionResult> DeleteQuestionSingle([FromQuery] int id)
+    {
+        var result =  await _questionService.DeleteQuestionSingle(id);
+
+        return Ok(result);
+    }
+    
+    [Authorize("Admin")]
     [HttpPost("ImportExcelQuestionSingle")]
     public async Task<IActionResult> ImportExcelQuestionSingle([FromForm] ImportExcelDto  parameters)
     {

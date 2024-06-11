@@ -1,8 +1,10 @@
+using System.Net;
 using System.Text.RegularExpressions;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Question;
 using Do_An_Tot_Nghiep.Enums.Question;
 using Do_An_Tot_Nghiep.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using NewProject.Services.Common;
 using OfficeOpenXml;
@@ -125,6 +127,7 @@ public class QuestionService : IQuestionService
             {
                 query = query.OrderByDescending(x => x.CreationTime);
             }
+
             if (parameters.Type.HasValue)
             {
                 query = query.Where(x => x.Type.Contains(parameters.Type.Value));
@@ -181,11 +184,12 @@ public class QuestionService : IQuestionService
             {
                 query = query.Where(x => x.PartId == parameters.PartId);
             }
-            
+
             if (!string.IsNullOrEmpty(parameters.Keyword))
             {
                 query = query.Where(x => x.Content.Contains(parameters.Keyword));
             }
+
             if (parameters.OrderBy.HasValue && parameters.OrderBy.Value)
             {
                 query = query.OrderByDescending(x => x.CreationTime != null)
@@ -254,7 +258,8 @@ public class QuestionService : IQuestionService
                 object partIdValue = worksheet.Cells[row, QUESTION_PARTID_INDEX].Value;
                 int? partIdInt = partIdValue != null ? Convert.ToInt32(partIdValue) : (int?)null;
                 Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC? PartId = partIdInt.HasValue
-                    ? (Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC?)Enum.Parse(typeof(Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC), partIdInt.Value.ToString())
+                    ? (Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC?)Enum.Parse(
+                        typeof(Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC), partIdInt.Value.ToString())
                     : (Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC?)null;
                 string TypeString = worksheet.Cells[row, QUESTION_TYPE_INDEX].Text.Trim();
                 List<int> TypeList = TypeString.Split(',')
@@ -266,7 +271,9 @@ public class QuestionService : IQuestionService
                 {
                     continue;
                 }
-                bool questionExists = await context.QuestionToeics.AnyAsync(q => q.Content == content && q.PartId == PartId);
+
+                bool questionExists =
+                    await context.QuestionToeics.AnyAsync(q => q.Content == content && q.PartId == PartId);
                 if (questionExists)
                 {
                     continue;
@@ -280,11 +287,11 @@ public class QuestionService : IQuestionService
                         typeof(Do_An_Tot_Nghiep.Enums.Question.PART_TOEIC),
                         worksheet.Cells[row, QUESTION_PARTID_INDEX].Value.ToString()),
                     Type = TypeList,
-                    ImageUrl = !string.IsNullOrWhiteSpace(worksheet.Cells[row, QUESTION_IMAGEURL_INDEX].Text?.Trim()) 
-                        ? new[] { worksheet.Cells[row, QUESTION_IMAGEURL_INDEX].Text.Trim() } 
+                    ImageUrl = !string.IsNullOrWhiteSpace(worksheet.Cells[row, QUESTION_IMAGEURL_INDEX].Text?.Trim())
+                        ? new[] { worksheet.Cells[row, QUESTION_IMAGEURL_INDEX].Text.Trim() }
                         : null,
-                    AudioUrl = !string.IsNullOrWhiteSpace(worksheet.Cells[row, QUESTION_AUDIOURL_INDEX].Text?.Trim()) 
-                        ? worksheet.Cells[row, QUESTION_AUDIOURL_INDEX].Text.Trim() 
+                    AudioUrl = !string.IsNullOrWhiteSpace(worksheet.Cells[row, QUESTION_AUDIOURL_INDEX].Text?.Trim())
+                        ? worksheet.Cells[row, QUESTION_AUDIOURL_INDEX].Text.Trim()
                         : null,
                     Transcription = worksheet.Cells[row, QUESTION_TRANSCRIPTION_INDEX].Text.Trim(),
                     CreationTime = DateTime.Now
@@ -315,6 +322,7 @@ public class QuestionService : IQuestionService
 
                 await context.SaveChangesAsync();
             }
+
             File.Delete(filePath);
 
             return DataResult.ResultSuccess("Tạo câu hỏi đơn thành công");
@@ -323,6 +331,67 @@ public class QuestionService : IQuestionService
         {
             Console.WriteLine(e);
             throw;
+        }
+    }
+
+    public async Task<object> UpdateQuestionSingle(UpdateQuestionSingleDto input)
+    {
+        using (var transaction = context.Database.BeginTransaction())
+        {
+            try
+            {
+                var question = await context.QuestionToeics.FindAsync(input.Id);
+                if (question == null)
+                {
+                    throw new Exception("Bad Request");
+                }
+
+                _mapper.Map(input, question);
+                context.QuestionToeics.Update(question);
+                foreach (var answerDto in input.Answers)
+                {
+                    var answers = await context.AnswerToeics.FindAsync(answerDto.Id);
+                    answers.IsBoolean = answerDto.IsBoolean;
+                    answers.Content = answerDto.Content;
+                    context.AnswerToeics.Update(answers);
+                }
+                await context.SaveChangesAsync();
+                transaction.Commit();
+                return DataResult.ResultSuccess("Chỉnh sửa thành công");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+    }
+
+    public async Task<object> DeleteQuestionSingle(int id)
+    {
+        using (var transaction = context.Database.BeginTransaction())
+        {
+            try
+            {
+                var question = await context.QuestionToeics.FindAsync(id);
+                if (question == null)
+                {
+                    return DataResult.ResultFail("Không tìm thấy câu hỏi", (int)HttpStatusCode.NotFound);
+                }
+
+                context.QuestionToeics.Remove(question);
+                var answers = context.AnswerToeics.Where(a => a.IdQuestion == id);
+                context.AnswerToeics.RemoveRange(answers);
+                await context.SaveChangesAsync();
+
+                transaction.Commit();
+                return DataResult.ResultSuccess(true, "");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 

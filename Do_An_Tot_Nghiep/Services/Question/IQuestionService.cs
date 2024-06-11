@@ -10,7 +10,9 @@ public interface IQuestionService
     Task<object> GetListQuestionGroup(GetListQuestionGroupDto parameters);
     Task<object> GetListQuestion(GetListQuestionDto parameters);
     Task<object> ImportExcelQuestionSingle(ImportExcelDto input);
-    
+    Task<object> UpdateQuestionSingle(UpdateQuestionSingleDto input);
+    Task<object> DeleteQuestionSingle(int id);
+
     // User
     Task<object> GetQuestionUser(GetQuestionUserDto parameters);
 }
