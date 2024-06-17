@@ -1,9 +1,11 @@
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Result;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using Do_An_Tot_Nghiep.Enums.Question;
 using Microsoft.EntityFrameworkCore;
+using NewProject.Services.Common;
 using Newtonsoft.Json;
 
 
@@ -65,9 +67,9 @@ public class ResultService : IResultService
                         Content = selectedAnswer.Content,
                         IsBoolean = selectedAnswer.IsBoolean, 
                         Transcription = selectedAnswer.Transcription,
-                        correctAnswerId = context.AnswerToeics
-                        .Where(a => a.IdQuestion == question.Id && a.IsBoolean)
-                        .Select(a => a.Id).ToList()
+                        AnswersQuestion = context.AnswerToeics
+                        .Where(a => a.IdQuestion == question.Id )
+                        .Select(a => new { a.Id, a.IsBoolean }).ToList()
                     }
                 };
             var results =  query.ToList();
@@ -113,16 +115,39 @@ public class ResultService : IResultService
                 ReadingCorrect = readingCorrect,
                 TotalCorrect = listeningCorrect + readingCorrect,
                 TotalWrong = listeningWrong + readingWrong,
-                Details = sortedResults.Select(r => new {
-                    r.Id,
-                    r.Content,
-                    r.Type,
-                    r.PartId,
-                    Correct = (r.Answer != null && submittedAnswerIds.Contains(r.Answer.Id) && r.Answer.IsBoolean),
-                    AnswerCorrectId = r.Answer?.correctAnswerId.First(),
-                    AnswerId = r.Answer?.Id
-                }).ToList()
+                Details = resultEntry.Data
             };
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<object> GetById(int id)
+    {
+        try
+        {
+            var result = await context.Results
+                .Where(r => r.Id == id)
+                .Select(r => new {
+                    Data = r.Data,
+                    Id = r.Id,
+                    TimeStart = r.TimeStart,
+                    TimeEnd = r.TimeEnd,
+                    ExamName = r.IdExam.HasValue ? context.ExamToeics
+                        .Where(e => e.Id == r.IdExam.Value)
+                        .Select(e => e.NameExam)
+                        .FirstOrDefault() : null
+                })
+                .FirstOrDefaultAsync();
+
+            if (result == null)
+            {
+                throw new Exception("Bad Request");
+            }
+            return DataResult.ResultSuccess(result, "Thành công");
         }
         catch (Exception e)
         {

@@ -27,4 +27,13 @@ public class ResultController : Controller
 
         return Ok(result);
     }
+    
+    [Authorize]
+    [HttpGet("GetById")]
+    public async Task<IActionResult> GetById([FromQuery] int id)
+    {
+        var result =  await _resultService.GetById(id);
+
+        return Ok(result);
+    }
 }

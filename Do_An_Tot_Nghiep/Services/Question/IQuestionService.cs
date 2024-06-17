@@ -16,4 +16,5 @@ public interface IQuestionService
     Task<object> DeleteQuestionGroup(int id);
     // User
     Task<object> GetQuestionUser(GetQuestionUserDto parameters);
+    Task<object> GetQuestionById(int id);
 }

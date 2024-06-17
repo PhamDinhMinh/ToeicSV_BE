@@ -5,4 +5,5 @@ namespace Do_An_Tot_Nghiep.Services.Result;
 public interface IResultService
 {
     Task<object> Submit(SubmitQuestionDto input);
+    Task<object> GetById(int id);
 }

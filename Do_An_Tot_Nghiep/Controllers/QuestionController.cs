@@ -108,4 +108,13 @@ public class QuestionController : Controller
 
         return Ok(result);
     }
+    
+    [Authorize]
+    [HttpGet("GetQuestionById")]
+    public async Task<IActionResult> GetQuestionById([FromQuery] int id)
+    {
+        var result =  await _questionService.GetQuestionById(id);
+
+        return Ok(result);
+    }
 }

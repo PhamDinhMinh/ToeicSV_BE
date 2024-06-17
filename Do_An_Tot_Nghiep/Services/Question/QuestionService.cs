@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Transactions;
 using AutoMapper;
 using Do_An_Tot_Nghiep.Dto.Question;
 using Do_An_Tot_Nghiep.Enums.Question;
@@ -169,6 +170,7 @@ public class QuestionService : IQuestionService
                     ImageUrl = groupQuestion.ImageUrl,
                     AudioUrl = groupQuestion.AudioUrl,
                     IdExam = groupQuestion.IdExam,
+                    Transcription = groupQuestion.Transcription,
                     CreationTime = groupQuestion.CreationTime,
                     Questions = manyQuestion.Select(q => new
                     {
@@ -355,6 +357,7 @@ public class QuestionService : IQuestionService
                     answerQ.Content = answerDto.Content;
                     context.AnswerToeics.Update(answerQ);
                 }
+
                 await context.SaveChangesAsync();
                 transaction.Commit();
                 return DataResult.ResultSuccess("Chỉnh sửa thành công");
@@ -406,6 +409,7 @@ public class QuestionService : IQuestionService
                 {
                     throw new Exception("Bad Request");
                 }
+
                 _mapper.Map(input, groupQuestion);
                 context.GroupQuestions.Update(groupQuestion);
                 foreach (var question in input.Questions)
@@ -430,6 +434,7 @@ public class QuestionService : IQuestionService
                     {
                         questionDetail.NumberSTT = question.NumberSTT;
                     }
+
                     context.QuestionToeics.Update(questionDetail);
                     foreach (var answerDto in question.Answers)
                     {
@@ -439,6 +444,7 @@ public class QuestionService : IQuestionService
                         context.AnswerToeics.Update(answerQ);
                     }
                 }
+
                 await context.SaveChangesAsync();
                 transaction.Commit();
                 return DataResult.ResultSuccess("Chỉnh sửa thành công");
@@ -470,6 +476,7 @@ public class QuestionService : IQuestionService
                     var answers = await context.AnswerToeics.Where(a => a.IdQuestion == question.Id).ToListAsync();
                     context.AnswerToeics.RemoveRange(answers);
                 }
+
                 context.QuestionToeics.RemoveRange(questions);
                 await context.SaveChangesAsync();
                 transaction.Commit();
@@ -645,6 +652,49 @@ public class QuestionService : IQuestionService
             }
 
             return DataResult.ResultSuccess("Thành công");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<object> GetQuestionById(int id)
+    {
+        try
+        {
+            var question = await context.QuestionToeics
+                .Where(q => q.Id == id)
+                .Select(q => new {
+                    Content = q.Content,
+                    Id = q.Id,
+                    Transcription  = q.Transcription,
+                    ImageUrl  = q.ImageUrl,
+                    Type  = q.Type,
+                    AudioUrl  = q.AudioUrl,
+                    PartId  = q.PartId,
+                    GroupData = q.IdGroupQuestion.HasValue ? context.GroupQuestions
+                        .Where(g => g.Id == q.IdGroupQuestion.Value)
+                        .Select(g => new
+                        {
+                            Transcription = g.Transcription,
+                            PartId = g.PartId,
+                            AudioUrl = g.AudioUrl,
+                            Content = g.Content,
+                            ImageUrl = g.ImageUrl,
+                            Id = g.Id,
+                        })
+                        .FirstOrDefault() : null,
+                    Answers = context.AnswerToeics.Where(a => a.IdQuestion == q.Id).ToList()
+                })
+                .FirstOrDefaultAsync();
+            if (question == null)
+            {
+                throw new Exception("Không tìm thấy câu hỏi");
+            }
+                
+            return DataResult.ResultSuccess(question, "");
         }
         catch (Exception e)
         {
