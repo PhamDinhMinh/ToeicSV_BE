@@ -36,4 +36,13 @@ public class ResultController : Controller
 
         return Ok(result);
     }
+    
+    [Authorize]
+    [HttpGet("HistoryForUser")]
+    public async Task<IActionResult> HistoryForUser([FromQuery]GetHistoryResultDto parameters)
+    {
+        var result =  await _resultService.HistoryForUser(parameters);
+
+        return Ok(result);
+    }
 }

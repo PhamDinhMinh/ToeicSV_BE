@@ -6,4 +6,5 @@ public interface IResultService
 {
     Task<object> Submit(SubmitQuestionDto input);
     Task<object> GetById(int id);
+    Task<object> HistoryForUser(GetHistoryResultDto parameters);
 }

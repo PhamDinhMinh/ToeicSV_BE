@@ -100,7 +100,7 @@ public class ResultService : IResultService
                 Data = jsonResult,
                 UserId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")),
                 TimeStart = input.TimeStart,
-                TimeEnd = input.TimeEnd
+                TimeEnd = DateTime.Now,
             };
             if (input.IdExam.HasValue)
             {
@@ -148,6 +148,45 @@ public class ResultService : IResultService
                 throw new Exception("Bad Request");
             }
             return DataResult.ResultSuccess(result, "Thành công");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public async Task<object> HistoryForUser(GetHistoryResultDto parameters)
+    {
+        try
+        {
+            var userId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id"));
+            var query = context.Results
+                .Where(r => r.UserId == userId)
+                .Select(r => new
+                {
+                    Data = r.Data,
+                    Id = r.Id,
+                    TimeStart = r.TimeStart,
+                    TimeEnd = r.TimeEnd,
+                    ExamId = r.IdExam,
+                    ExamName = r.IdExam.HasValue
+                        ? context.ExamToeics
+                            .Where(e => e.Id == r.IdExam.Value)
+                            .Select(e => e.NameExam)
+                            .FirstOrDefault()
+                        : null
+                });
+            if (query == null)
+            {
+                return DataResult.ResultSuccess(query, "Không có dữ liệu");
+            }
+            if (parameters.ExamId.HasValue)
+            {
+                query = query.Where(x => x.ExamId == parameters.ExamId);
+            }
+            var result = query.Skip(parameters.SkipCount).Take(parameters.MaxResultCount).ToList();
+            return DataResult.ResultSuccess(result, "", query.Count());
         }
         catch (Exception e)
         {
