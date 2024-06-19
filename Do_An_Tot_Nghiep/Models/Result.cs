@@ -12,4 +12,5 @@ public class Result
     public DateTime? TimeStart { get; set; }
     public DateTime? TimeEnd { get; set; }
     public int? IdExam { get; set; }
+    public int? NumberCorrect { get; set; }
 }
