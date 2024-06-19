@@ -39,7 +39,7 @@ public class StatisticsService : IStatisticsService
     {
         return await GatherStatistics(context.QuestionToeics, NumberRange);
     }
-    
+
     public async Task<object> StatisticsCorrectQuestion()
     {
         try
@@ -49,7 +49,7 @@ public class StatisticsService : IStatisticsService
             int correctQuestion = 0;
             int questionListening = 0;
             int questionReading = 0;
-            
+
             foreach (var result in results)
             {
                 if (!string.IsNullOrEmpty(result.Data))
@@ -65,17 +65,23 @@ public class StatisticsService : IStatisticsService
                                 if (question.PartId < (PART_TOEIC?)5)
                                 {
                                     questionListening++;
-                                    if (question.Answer.IsBoolean)
+                                    if (question.Answer != null)
                                     {
-                                        correctQuestion++;
+                                        if (question.Answer.IsBoolean)
+                                        {
+                                            correctQuestion++;
+                                        }
                                     }
                                 }
                                 else
                                 {
                                     questionReading++;
-                                    if (question.Answer.IsBoolean)
+                                    if (question.Answer != null)
                                     {
-                                        correctQuestion++;
+                                        if (question.Answer.IsBoolean)
+                                        {
+                                            correctQuestion++;
+                                        }
                                     }
                                 }
                             }
@@ -88,7 +94,8 @@ public class StatisticsService : IStatisticsService
                     }
                 }
             }
-            var dataReturn =  new
+
+            var dataReturn = new
             {
                 TotalQuestions = totalQuestions,
                 CorrectAnswers = correctQuestion,
