@@ -39,8 +39,6 @@ public class ResultService : IResultService
             var query = from question in context.QuestionToeics
                 where submittedQuestionIds.Contains(question.Id)
                 join answers in context.AnswerToeics on question.Id equals answers.IdQuestion into answersGroup
-                // from selectedAnswer in answersGroup.DefaultIfEmpty()
-                // where submittedAnswerIds.Contains(selectedAnswer.Id)
                 join groupQuestion in context.GroupQuestions on question.IdGroupQuestion equals groupQuestion.Id into
                     groupQuestionGroup
                 from groups in groupQuestionGroup.DefaultIfEmpty()

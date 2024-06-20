@@ -1,7 +1,6 @@
-using Do_An_Tot_Nghiep.Dto.Result;
+using Do_An_Tot_Nghiep.Dto.Statistics;
 using Do_An_Tot_Nghiep.Services.Upload;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Do_An_Tot_Nghiep.Controllers;
@@ -52,6 +51,24 @@ public class StatisticsController : Controller
     public async Task<IActionResult> StatisticsCorrectQuestion()
     {
         var result = await _statisticsService.StatisticsCorrectQuestion();
+
+        return Ok(result);
+    }
+    
+    [Authorize()]
+    [HttpGet("StatisticCorrectQuestionUser")]
+    public async Task<IActionResult> StatisticCorrectQuestionUser()
+    {
+        var result = await _statisticsService.StatisticCorrectQuestionUser();
+
+        return Ok(result);
+    }
+    
+    [Authorize()]
+    [HttpGet("StatisticsOrdinal")]
+    public async Task<IActionResult> StatisticsOrdinal([FromQuery]GetOrdinalDto input)
+    {
+        var result = await _statisticsService.StatisticsOrdinal(input);
 
         return Ok(result);
     }

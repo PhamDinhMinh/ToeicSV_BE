@@ -626,13 +626,10 @@ public class QuestionService : IQuestionService
                             }).ToList()
                     };
 
-                // Áp dụng các điều kiện lọc nếu có
                 if (!string.IsNullOrEmpty(parameters.Keyword))
                 {
                     queryGroup = queryGroup.Where(x => x.Content.Contains(parameters.Keyword));
                 }
-
-                // Phân loại nhóm câu hỏi theo số lượng câu hỏi
                 var groupsWith2Questions = queryGroup.Where(g => g.Questions.Count == 2).OrderBy(x => Guid.NewGuid())
                     .Take(4).ToList();
                 var groupsWith3Questions = queryGroup.Where(g => g.Questions.Count == 3).OrderBy(x => Guid.NewGuid())
@@ -642,7 +639,6 @@ public class QuestionService : IQuestionService
                 var groupsWith5Questions = queryGroup.Where(g => g.Questions.Count == 5).OrderBy(x => Guid.NewGuid())
                     .Take(5).ToList();
 
-                // Kết hợp tất cả các nhóm đã chọn
                 var result = groupsWith2Questions.Concat(groupsWith3Questions)
                     .Concat(groupsWith4Questions)
                     .Concat(groupsWith5Questions)
