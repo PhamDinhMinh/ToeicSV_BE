@@ -273,35 +273,40 @@ public class PostService : IPostService
 
     public async Task<object> Delete(int id)
     {
-        try
+        using (var transaction = context.Database.BeginTransaction())
         {
-            var post = await (from p in context.Posts where (p.Id == id) select p).FirstOrDefaultAsync();
-            if (post == null)
+            try
             {
-                return DataResult.ResultFail("Không tồn tại bài viết");
-            }
+                var post = await (from p in context.Posts where (p.Id == id) select p).FirstOrDefaultAsync();
+                if (post == null)
+                {
+                    return DataResult.ResultFail("Không tồn tại bài viết");
+                }
+                if (_httpContextAccessor.HttpContext != null)
+                {
+                    if (post.CreatorUserId == int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")))
+                    {
+                        var comments = from c in context.PostComments where (c.PostId == id) select c;
+                        context.PostComments.RemoveRange(comments);
+                        context.Posts.Remove(post);
+                        await context.SaveChangesAsync();
+                        transaction.Commit();
+                        return DataResult.ResultSuccess(true, "Xoá bài viết thành công", (int)HttpStatusCode.OK);
+                    }
+                    else
+                    {
+                        return DataResult.ResultFail("Bạn không có quyền thực hiện thao tác này",
+                            (int)HttpStatusCode.Forbidden);
+                    }
+                }
 
-            if (_httpContextAccessor.HttpContext != null)
+                return DataResult.ResultFail("Bạn không có quyền thực hiện thao tác này", (int)HttpStatusCode.Forbidden);
+            }
+            catch (Exception e)
             {
-                if (post.CreatorUserId == int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")))
-                {
-                    context.Posts.Remove(post);
-                    await context.SaveChangesAsync();
-                    return DataResult.ResultSuccess(true, "Xoá bài viết thành công", (int)HttpStatusCode.OK);
-                }
-                else
-                {
-                    return DataResult.ResultFail("Bạn không có quyền thực hiện thao tác này",
-                        (int)HttpStatusCode.Forbidden);
-                }
+                Console.WriteLine(e);
+                throw;
             }
-
-            return DataResult.ResultFail("Bạn không có quyền thực hiện thao tác này", (int)HttpStatusCode.Forbidden);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
         }
     }
 }
