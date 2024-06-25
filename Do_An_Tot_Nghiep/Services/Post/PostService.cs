@@ -59,6 +59,7 @@ public class PostService : IPostService
                             select comment).AsQueryable().Count(),
                         CountReact = (from react in context.PostReacts
                             where react.PostId == post.Id
+                            where react.CommentId == null
                             select react).AsQueryable().Count(),
                         ReactStates = context.PostReacts
                             .Where(x => x.PostId == post.Id && x.CommentId == null && x.ReactState.HasValue)
