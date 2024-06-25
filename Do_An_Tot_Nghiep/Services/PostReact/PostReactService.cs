@@ -124,7 +124,7 @@ public class PostReactService : IPostReactService
                     {
                         var react = new Models.PostReact()
                         {
-                            PostId = input.PostId,
+                            PostId = comment.PostId,
                             ReactState = input.ReactState,
                             CommentId = input.CommentId,
                             CreatorUserId = userId,
