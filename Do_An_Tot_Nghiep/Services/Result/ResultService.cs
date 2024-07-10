@@ -103,7 +103,7 @@ public class ResultService : IResultService
             {
                 Data = jsonResult,
                 UserId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue("Id")),
-                TimeStart = input.TimeStart,
+                TimeStart = DateTime.Now,
                 TimeEnd = DateTime.Now,
                 NumberCorrect = readingCorrect + listeningCorrect,
             };
@@ -121,7 +121,8 @@ public class ResultService : IResultService
                 ReadingCorrect = readingCorrect,
                 TotalCorrect = listeningCorrect + readingCorrect,
                 TotalWrong = listeningWrong + readingWrong,
-                Details = resultEntry.Data
+                Details = resultEntry.Data,
+                IdExam = input?.IdExam
             };
         }
         catch (Exception e)
