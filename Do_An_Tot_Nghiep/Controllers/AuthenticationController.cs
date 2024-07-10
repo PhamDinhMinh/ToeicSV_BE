@@ -38,7 +38,7 @@ public class AuthenticationController : Controller
             }
             else
             {
-                return BadRequest("User registration failed");
+                return BadRequest("Tên đăng nhập hoặc email đã tồn tại.");
             }
         }
         catch (Exception e)

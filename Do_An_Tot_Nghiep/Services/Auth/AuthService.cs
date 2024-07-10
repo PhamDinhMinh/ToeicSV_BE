@@ -54,6 +54,12 @@ public class AuthService : IAuthService
     {
         try
         {
+            var existingUser = await context.Users
+                .AnyAsync(u => u.UserName == input.UserName || u.EmailAddress == input.EmailAddress);
+            if (existingUser)
+            {
+                return null;
+            }
             UserRegisterDto inputHashPass = new UserRegisterDto();
             inputHashPass = input;
             inputHashPass.Password = await HashPassword(input.Password);
